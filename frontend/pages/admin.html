@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body class="app-body">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="/assets/images/rp-logo.png" alt="RP logo">
+        <div><strong>RP Admin</strong><span>Management</span></div>
+      </div>
+      <nav class="nav-links">
+        <a class="active" href="/pages/admin.html">Users</a>
+        <a href="/pages/login.html">Login</a>
+        <button onclick="logout()">Logout</button>
+      </nav>
+    </aside>
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">Administration</span>
+          <h1>User Management</h1>
+          <p>Review registered accounts, inspect activity, and remove test users.</p>
+        </div>
+      </header>
+      <section class="grid">
+        <article class="card span-7">
+          <h2>Registered Users</h2>
+          <div class="form-stack">
+            <input type="text" id="searchUser" placeholder="Search email" onkeyup="filterUsers()">
+          </div>
+          <div id="userList" class="food-list"></div>
+        </article>
+        <article class="card span-5">
+          <h2>User Overview</h2>
+          <div id="overviewPanel">
+            <p class="empty-state">Select a user overview to see account details.</p>
+          </div>
+        </article>
+        <article class="card span-5">
+          <h2>Suggestions</h2>
+          <div id="overviewPanel">
+            <p class="empty-state">View Students suggustions.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script src="/src/app.js"></script>
+</body>
+</html>
