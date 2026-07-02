@@ -45,7 +45,10 @@ pipeline {
 
         stage('Health Check') {
             steps {
-                sh 'curl -f http://localhost:3000/pages/login.html'
+                sh '''
+                    echo "===== Health Check ====="
+                    curl -f http://app:3000/pages/login.html
+                '''
             }
         }
     }
