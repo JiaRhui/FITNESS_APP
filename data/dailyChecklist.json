@@ -1,9 +1,0 @@
-{
-  "feature": "Daily Habit Checklist",
-  "storage": "browser localStorage",
-  "habits": [
-    "calorieGoal",
-    "fitnessWorkout"
-  ],
-  "note": "This file is only here to match the requested data/static/templates format. The current feature saves checklist progress in the browser localStorage."
-}
