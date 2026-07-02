@@ -10,9 +10,7 @@ pipeline {
 
         stage('Clean Previous Container') {
             steps {
-                sh '''
-                    docker-compose down || true
-                '''
+                sh 'docker-compose down || true'
             }
         }
 
@@ -43,19 +41,25 @@ pipeline {
             }
         }
 
-        stage('Health Check') {
+        stage('Health Check Inside App Container') {
             steps {
                 sh '''
-                    echo "===== Health Check ====="
-                    curl -f http://app:3000/pages/login.html
+                    echo "===== Testing app from inside container ====="
+                    docker exec fitness-app-pipeline-app-1 wget --spider -q http://localhost:3000/pages/login.html
+                    echo "Health check passed"
                 '''
             }
         }
     }
 
     post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+
         failure {
             sh '''
+                echo "===== Pipeline failed. Showing debug info ====="
                 docker-compose ps || true
                 docker-compose logs app || true
             '''
