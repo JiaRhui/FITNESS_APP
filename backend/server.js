@@ -8,7 +8,7 @@ const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const authController = require('./controllers/authController');
 const adminController = require('./controllers/adminController');
-const { requireSession } = require('./middleware/helpers');
+const { requireSession, requireAdmin } = require('./middleware/helpers');
 const dailyChecklistRoutes = require('./routes/dailyChecklistRoutes');
 
 const app = express();
@@ -31,6 +31,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/daily-checklist', dailyChecklistRoutes);
+
+app.get('/pages/admin.html', requireAdmin, (req, res) => res.sendFile(path.join(pagesRoot, 'admin.html')));
 
 app.use(express.static(frontendRoot));
 app.get('/', (req, res) => res.redirect('/pages/login.html'));
