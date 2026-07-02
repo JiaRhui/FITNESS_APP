@@ -7,6 +7,12 @@ pipeline {
                 echo 'Code checked out from GitHub'
             }
         }
+        
+        stage('Deploy with Ansible') {
+            steps {
+                sh 'ansible-playbook -i ansible/hosts ansible/deploy_docker_playbook.yaml'
+            }
+        }
 
         stage('Clean Previous Container') {
             steps {
