@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Habit Checklist</title>
+  <link rel="stylesheet" href="../styles/dailyChecklist.css">
+</head>
+<body class="app-body">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="../assets/images/rp-logo.png" alt="RP logo">
+        <div><strong>RP Fitness</strong><span>Daily Habits</span></div>
+      </div>
+      <nav class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a class="active" href="dailyChecklist.html">Daily Checklist</a>
+        <button onclick="logout()">Logout</button>
+      </nav>
+    </aside>
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">Monthly habit tracker</span>
+          <h1>Daily Habit Checklist</h1>
+          <p>Track your calorie goal and workout each day and watch your monthly progress grow.</p>
+        </div>
+      </header>
+      <div id="habitTrackerRoot"></div>
+    </main>
+  </div>
+  <script src="../src/app.js"></script>
+  <script src="../src/habitTracker.js"></script>
+</body>
+</html>
