@@ -8,22 +8,54 @@ pipeline {
             }
         }
 
+        stage('Clean Previous Container') {
+            steps {
+                sh '''
+                    docker-compose down || true
+                '''
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh 'docker-compose build'
             }
         }
 
-        stage('Run App') {
+        stage('Run Application') {
             steps {
                 sh 'docker-compose up -d'
             }
         }
 
-        stage('Test App') {
+        stage('Verify Container') {
             steps {
-                sh 'curl http://localhost:3000'
+                sh '''
+                    echo "===== Waiting for app to start ====="
+                    sleep 10
+
+                    echo "===== Docker Compose Status ====="
+                    docker-compose ps
+
+                    echo "===== App Logs ====="
+                    docker-compose logs app
+                '''
             }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh 'curl -f http://localhost:3000/pages/login.html'
+            }
+        }
+    }
+
+    post {
+        failure {
+            sh '''
+                docker-compose ps || true
+                docker-compose logs app || true
+            '''
         }
     }
 }

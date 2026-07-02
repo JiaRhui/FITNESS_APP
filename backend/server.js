@@ -54,6 +54,6 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ success: false, message: err.message || 'Server error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`RP Fitness running at http://localhost:${PORT}/pages/login.html`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`RP Fitness running at http://0.0.0.0:${PORT}/pages/login.html`);
 });
