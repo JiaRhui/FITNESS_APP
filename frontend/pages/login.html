@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RP Fitness Login</title>
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <section class="auth-panel">
+      <img src="/assets/images/rp-logo.png" class="logo" alt="Republic Polytechnic logo">
+      <span class="eyebrow">Student fitness portal</span>
+      <h1>RP Fitness</h1>
+      <p>Login with your RP student email to manage calorie tracking, daily intake, and fitness summaries.</p>
+      <div class="form-stack">
+        <input type="email" id="loginEmail" placeholder="Student email">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p id="loginMessage" class="form-message"></p>
+      </div>
+      <p>No account? <a href="/pages/signup.html">Create one</a></p>
+    </section>
+    <section class="auth-panel brand-panel">
+      <span class="eyebrow">C270 DevOps project</span>
+      <h2>Built as a full-stack app with a maintainable backend and deployable structure.</h2>
+      <p>Includes Express API routes, JSON-backed data storage, Docker files, and a responsive black and green interface.</p>
+    </section>
+  </main>
+  <script src="/src/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+﻿{
+  "name": "rp-fitness-backend",
+  "version": "1.0.0",
+  "description": "Express backend for the RP Fitness full-stack DevOps project.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --check server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0"
+  }
+}

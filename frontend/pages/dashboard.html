@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RP Fitness Dashboard</title>
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body class="app-body">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="/assets/images/rp-logo.png" alt="RP logo">
+        <div><strong>RP Fitness</strong><span>Student Portal</span></div>
+      </div>
+      <nav class="nav-links">
+        <a class="active" href="/pages/dashboard.html">Dashboard</a>
+        <button onclick="logout()">Logout</button>
+      </nav>
+    </aside>
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">Overview</span>
+          <h1>Dashboard</h1>
+          <p>Access your student fitness and account tools.</p>
+        </div>
+      </header>
+      <section class="grid">
+        <article class="card action-card span-4">
+          <div><h2>Calorie Tracker</h2><p>Food logging and calorie planning tools.</p></div>
+          <button class="secondary-button" disabled>Coming Soon</button>
+        </article>
+        <article class="card action-card span-4">
+          <div><h2>Workout Planner</h2><p>Plan and track your exercise routines and progress.</p></div>
+          <button class="secondary-button" disabled>Coming Soon</button>
+        </article>
+        <article class="card action-card span-4">
+          <div><h2>Daily Checklist</h2><p>Plan and review your daily fitness goals and activities.</p></div>
+          <button class="secondary-button" disabled>Coming Soon</button>
+        </article>
+        <article class="card action-card span-4">
+          <div><h2>Gym Tracker</h2><p>Find the closest GYM near you.</p></div>
+          <button class="secondary-button" disabled>Coming Soon</button>
+        </article>
+        <article class="card action-card span-4">
+          <div><h2>Nutrients Tracker</h2><p>Track your nutrient intake and stay on top of your dietary goals.</p></div>
+          <button class="secondary-button" disabled>Coming Soon</button>
+        </article>
+        <article class="card action-card span-4">
+          <div><h2>Help Desk</h2><p>Get support and assistance OR give ur suggutions.</p></div>
+          <button class="secondary-button" disabled>Coming Soon</button>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script src="/src/app.js"></script>
+</body>
+</html>
