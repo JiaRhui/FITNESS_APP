@@ -45,7 +45,7 @@ pipeline {
             steps {
                 sh '''
                     echo "===== Testing app from inside container ====="
-                    docker exec fitness-app-pipeline-app-1 wget --spider -q http://localhost:3000/pages/login.html
+                    docker exec fitness-app-pipeline-app-1 wget --spider -q http://0.0.0.0:3000/pages/login.html
                     echo "Health check passed"
                 '''
             }
