@@ -1,116 +1,158 @@
-﻿function $(id) {
-  return document.getElementById(id);
-}
-
-async function apiFetch(url, options = {}) {
-  const response = await fetch(url, {
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-    ...options
-  });
-  const data = await response.json().catch(() => ({ success: false, message: 'Invalid server response' }));
-  if (!response.ok) throw new Error(data.message || 'Request failed');
-  return data;
-}
-
-function setMessage(id, message, type = 'error') {
-  const element = $(id);
-  if (!element) return;
-  element.textContent = message || '';
-  element.className = `form-message ${type}`;
-}
-
-async function logout() {
-  await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
-  sessionStorage.clear();
-  window.location.href = '/pages/login.html';
-}
-
 async function login() {
-  const email = $('loginEmail').value.trim();
-  const password = $('loginPassword').value;
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+  const message = document.getElementById("loginMessage");
 
-  if (email === 'admin' && password === 'admin') {
-    sessionStorage.setItem('admin', 'true');
-    window.location.href = '/pages/admin.html';
-    return;
-  }
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email, password })
+  });
 
-  try {
-    const data = await apiFetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-    if (data.success) {
-      sessionStorage.setItem('email', email);
-      window.location.href = '/pages/dashboard.html';
+  const data = await res.json();
+
+  if (data.success) {
+    if (data.user && data.user.role === 'admin') {
+      window.location.href = "/pages/admin.html";
+    } else {
+      window.location.href = "/pages/dashboard.html";
     }
-  } catch (error) {
-    setMessage('loginMessage', error.message);
+  } else {
+    message.textContent = data.message || "Login failed";
   }
 }
 
 async function signup() {
-  try {
-    const data = await apiFetch('/api/auth/signup', {
-      method: 'POST',
-      body: JSON.stringify({ email: $('email').value.trim(), password: $('password').value })
-    });
-    setMessage('message', data.message || 'Account created successfully', 'success');
-    setTimeout(() => { window.location.href = '/pages/login.html'; }, 700);
-  } catch (error) {
-    setMessage('message', error.message);
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const message = document.getElementById("message");
+
+  const res = await fetch("/api/auth/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+  message.textContent = data.message;
+
+  if (data.success) {
+    setTimeout(() => {
+      window.location.href = "/pages/login.html";
+    }, 1000);
   }
 }
 
-async function loadUsers() {
-  const userList = $('userList');
+async function logout() {
+  await fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "include"
+  });
+
+  window.location.href = "/pages/login.html";
+}
+
+async function loadAdminUsers() {
+  const userList = document.getElementById('userList');
   if (!userList) return;
-  try {
-    const data = await apiFetch('/api/admin/users');
-    userList.innerHTML = '';
-    if (!data.users.length) {
-      userList.innerHTML = '<p class="empty-state">No users found.</p>';
-      return;
-    }
-    data.users.forEach((user) => {
-      const row = document.createElement('div');
-      row.className = 'user-row';
-      row.dataset.email = user.email.toLowerCase();
-      row.innerHTML = `<span>${user.email}</span><div class="row-actions"><button onclick="overviewUser('${user.email}')">Overview</button><button class="danger-button" onclick="deleteUser('${user.email}')">Delete</button></div>`;
-      userList.appendChild(row);
-    });
-  } catch (error) {
-    userList.innerHTML = `<p class="form-message error">${error.message}</p>`;
-  }
-}
 
-function filterUsers() {
-  const search = $('searchUser').value.toLowerCase();
-  document.querySelectorAll('.user-row').forEach((row) => {
-    row.style.display = row.dataset.email.includes(search) ? 'flex' : 'none';
+  const res = await fetch('/api/admin/users', {
+    credentials: 'include'
   });
-}
+  const data = await res.json();
 
-async function deleteUser(email) {
-  if (!confirm(`Delete ${email}?`)) return;
-  try {
-    await apiFetch(`/api/admin/users/${encodeURIComponent(email)}`, { method: 'DELETE' });
-    await loadUsers();
-  } catch (error) {
-    alert(error.message);
+  if (!res.ok || !data.success) {
+    userList.innerHTML = '<p class="empty-state">Unable to load users.</p>';
+    return;
   }
+
+  window.adminUsers = data.users || [];
+  renderAdminUsers(window.adminUsers);
 }
 
-async function overviewUser(email) {
-  try {
-    const data = await apiFetch('/api/admin/users/overview', { method: 'POST', body: JSON.stringify({ email }) });
-    const overview = data.overview;
-    $('overviewPanel').innerHTML = `<h3>${overview.email}</h3><dl class="overview-list"><div><dt>Created</dt><dd>${overview.createdAt}</dd></div><div><dt>Last login</dt><dd>${overview.lastLogin}</dd></div></dl>`;
-  } catch (error) {
-    alert(error.message);
+function renderAdminUsers(users) {
+  const userList = document.getElementById('userList');
+  if (!userList) return;
+
+  if (!users.length) {
+    userList.innerHTML = '<p class="empty-state">No registered users found.</p>';
+    return;
   }
+
+  userList.innerHTML = users.map((user) => `
+    <div class="food-item admin-user-item">
+      <span>${user.email}</span>
+      <div class="admin-actions">
+        <button type="button" onclick="viewUserOverview('${user.email}')">Overview</button>
+        <button type="button" style="background-color: #dc3545;" onclick="alert('Deleting user ${user.email}'); deleteAdminUser('${user.email}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
 }
 
-if (typeof window !== 'undefined') {
-  window.addEventListener('load', () => {
-    loadUsers();
+async function deleteAdminUser(email) {
+  if (!confirm(`Delete user ${email}?`)) return;
+
+  const overviewPanel = document.getElementById('overviewPanel');
+  const res = await fetch('/api/admin/users/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ email })
   });
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    alert(data.message || 'Unable to delete user');
+    return;
+  }
+
+  window.adminUsers = (window.adminUsers || []).filter((user) => user.email !== email);
+  renderAdminUsers(window.adminUsers);
+
+  if (overviewPanel && overviewPanel.textContent.includes(email)) {
+    overviewPanel.innerHTML = '<p class="empty-state">Select a user overview to see account details.</p>';
+  }
 }
+
+async function filterUsers() {
+  const query = document.getElementById('searchUser').value.trim().toLowerCase();
+  const users = (window.adminUsers || []).filter((user) => user.email.toLowerCase().includes(query));
+  renderAdminUsers(users);
+}
+
+async function viewUserOverview(email) {
+  const overviewPanel = document.getElementById('overviewPanel');
+  if (!overviewPanel) return;
+
+  const res = await fetch('/api/admin/users/overview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ email })
+  });
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    overviewPanel.innerHTML = '<p class="empty-state">Unable to load overview.</p>';
+    return;
+  }
+
+  overviewPanel.innerHTML = `
+    <div class="user-overview">
+      <p><strong>Email:</strong> ${data.overview.email}</p>
+      <p><strong>Created:</strong> ${data.overview.createdAt}</p>
+      <p><strong>Last login:</strong> ${data.overview.lastLogin}</p>
+      <p><strong>Foods logged:</strong> ${data.overview.foodCount}</p>
+      <p><strong>Total calories:</strong> ${data.overview.totalCalories}</p>
+    </div>
+  `;
+}
+
+window.addEventListener('load', () => {
+  if (document.getElementById('userList')) {
+    loadAdminUsers();
+  }
+});

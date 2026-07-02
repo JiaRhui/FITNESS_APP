@@ -1,6 +1,9 @@
 ﻿const express = require('express');
 const adminController = require('../controllers/adminController');
+const { requireSession, requireAdmin } = require('../middleware/helpers');
 const router = express.Router();
+router.use(requireSession);
+router.use(requireAdmin);
 router.get('/users', adminController.getUsers);
 router.delete('/users/:email', (req, res, next) => { req.body.email = req.params.email; adminController.deleteUser(req, res, next); });
 router.post('/users/delete', adminController.deleteUser);
