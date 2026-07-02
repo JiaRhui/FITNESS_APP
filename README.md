@@ -1,61 +1,43 @@
-# RP Fitness Project - Remaining Content (No Daily Checklist)
+# Daily Checklist Feature
 
-This folder keeps the original full-stack project format with the Daily Checklist feature removed.
+This folder contains only the Daily Checklist feature in the requested format.
 
-## Folder Structure
+## Folder structure
 
 ```text
-remaining_content_no_checklist/
-├── backend/
-│   ├── controllers/
-│   ├── data/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── package.json
-│   └── server.js
-├── frontend/
-│   ├── assets/
-│   ├── pages/
-│   │   ├── admin.html
-│   │   ├── dashboard.html
-│   │   ├── login.html
-│   │   └── signup.html
-│   ├── public/
-│   ├── src/
-│   │   └── app.js
-│   └── styles/
-│       └── style.css
-├── Dockerfile
-├── docker-compose.yml
-├── index.js
-├── package.json
-└── package-lock.json
+daily_checklist_feature/
+├── data/
+│   └── dailyChecklist.json
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   ├── images/
+│   │   └── rp-logo.png
+│   └── js/
+│       ├── app.js
+│       └── habitTracker.js
+├── templates/
+│   └── DailyHabits.html
+├── README.md
+├── app.py
+└── requirements.txt
 ```
 
-## Included Pages
-
-- Login
-- Sign up
-- Student dashboard
-- Admin dashboard / user management
-
-## Removed Daily Checklist Files
-
-- `frontend/pages/DailyHabits.html`
-- `frontend/src/habitTracker.js`
-- Dashboard links/buttons that opened the Daily Checklist page
-- The Daily Checklist route from `backend/server.js`
-
-## Run Locally
+## How to run
 
 ```bash
-npm install
-npm start
+pip install -r requirements.txt
+python app.py
 ```
 
 Then open:
 
 ```text
-http://localhost:3000/pages/login.html
+http://127.0.0.1:5000/daily-checklist
 ```
+
+## Notes
+
+- This is only the Daily Checklist feature.
+- The remaining project content was not reorganized.
+- The checklist progress is saved using browser localStorage.
