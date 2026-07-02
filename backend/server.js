@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const authController = require('./controllers/authController');
 const adminController = require('./controllers/adminController');
 const { requireSession } = require('./middleware/helpers');
+const dailyChecklistRoutes = require('./routes/dailyChecklistRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,9 +30,11 @@ app.use(session({
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/daily-checklist', dailyChecklistRoutes);
 
 app.use(express.static(frontendRoot));
 app.get('/', (req, res) => res.redirect('/pages/login.html'));
+app.get('/daily-checklist', (req, res) => res.sendFile(path.join(pagesRoot, 'dailyChecklist.html')));
 
 ['login.html', 'signup.html', 'dashboard.html', 'admin.html'].forEach((page) => {
   app.get(`/${page}`, (req, res) => res.sendFile(path.join(pagesRoot, page)));

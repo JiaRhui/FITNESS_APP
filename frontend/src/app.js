@@ -1,4 +1,4 @@
 function logout() {
   sessionStorage.clear();
-  window.location.href = "/daily-checklist";
+  window.location.href = "/pages/login.html";
 }
