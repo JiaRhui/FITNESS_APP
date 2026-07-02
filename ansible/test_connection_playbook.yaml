@@ -1,0 +1,9 @@
+---
+- name: Test local Ansible connection
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Print hello world from localhost
+      command: echo hello world
+      changed_when: false
