@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RP Fitness Calorie Tracker</title>
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body class="app-body">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="/assets/images/rp-logo.png" alt="RP logo">
+        <div><strong>RP Fitness</strong><span>Calorie Tracker</span></div>
+      </div>
+      <nav class="nav-links">
+        <a href="/pages/dashboard.html">Dashboard</a>
+        <a class="active" href="/pages/Calorie-Tracker.html">Calorie Tracker</a>
+        <a href="/pages/dailyChecklist.html">Daily Checklist</a>
+        <button onclick="logout()">Logout</button>
+      </nav>
+    </aside>
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">Health dashboard</span>
+          <h1>HEALTH DASHBOARD</h1>
+          <p>Calorie tracking with daily goals, food logs, recommended intake and monthly progress status.</p>
+        </div>
+      </header>
+      <section class="grid tracker-grid">
+        <article class="card tracker-card span-6">
+          <div class="tracker-section-header">
+            <h2>Daily Calorie Goal</h2>
+            <p>Set a daily target and keep your calories on track.</p>
+          </div>
+          <div class="form-stack">
+            <label for="goalDateInput">Goal date</label>
+            <input type="date" id="goalDateInput">
+            <label for="calorieGoalInput">Calorie goal</label>
+            <input type="number" id="calorieGoalInput" placeholder="Enter calorie goal" min="0">
+            <div class="form-row">
+              <button id="saveGoalButton" type="button">Save calorie goal</button>
+              <button id="clearGoalButton" type="button" class="secondary-button">Clear goal</button>
+            </div>
+            <p id="goalMessage" class="form-message"></p>
+          </div>
+
+          <div class="tracker-section-divider"></div>
+
+          <div class="tracker-section-header">
+            <h2>Recommended Daily Calorie Intake</h2>
+            <p>Get a personalized recommendation based on your profile and activity level.</p>
+          </div>
+          <div class="form-stack">
+            <label for="ageInput">Age</label>
+            <input type="number" id="ageInput" placeholder="Enter age" min="10">
+            <label for="genderInput">Gender</label>
+            <select id="genderInput">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+            <label for="heightInput">Height (cm)</label>
+            <input type="number" id="heightInput" placeholder="Enter height" min="100">
+            <label for="weightInput">Weight (kg)</label>
+            <input type="number" id="weightInput" placeholder="Enter weight" min="30">
+            <label for="exerciseLevelInput">Exercise level</label>
+            <select id="exerciseLevelInput">
+              <option value="exercise regularly">Exercise regularly</option>
+              <option value="exercise a few times a week">Exercise a few times a week</option>
+              <option value="exercise sometimes">Exercise sometimes</option>
+              <option value="rarely exercise">Rarely exercise</option>
+              <option value="not at all">Not at all</option>
+            </select>
+            <div class="form-row">
+              <button id="calculateRecommendationButton" type="button">Calculate recommendation</button>
+              <button id="useRecommendedButton" type="button" class="secondary-button">Use recommended goal</button>
+            </div>
+            <p id="recommendationResult" class="form-message success"></p>
+          </div>
+        </article>
+
+        <article class="card tracker-card span-6">
+          <div class="tracker-section-header">
+            <h2>Daily Calorie Progress</h2>
+            <p>See how your goal, food intake and remaining calories compare.</p>
+          </div>
+          <div class="progress-grid">
+            <div class="progress-metric">
+              <span>Goal</span>
+              <strong id="progressGoalValue">Not set</strong>
+            </div>
+            <div class="progress-metric">
+              <span>Food eaten</span>
+              <strong id="progressFoodValue">0 calories</strong>
+            </div>
+            <div class="progress-metric">
+              <span>Remaining</span>
+              <strong id="progressRemainingValue">Set a goal to see progress</strong>
+            </div>
+            <div class="progress-metric">
+              <span>Status</span>
+              <strong id="progressStatusValue">No goal set</strong>
+            </div>
+          </div>
+
+          <div class="tracker-section-divider"></div>
+
+          <div class="tracker-section-header">
+            <h2>Food Calorie Tracker</h2>
+            <p>Log your meals daily and keep track of what you eat.</p>
+          </div>
+          <div class="form-stack">
+            <label for="foodDateInput">Food date</label>
+            <input type="date" id="foodDateInput">
+            <label for="foodNameInput">Food name</label>
+            <input type="text" id="foodNameInput" placeholder="e.g. Toast or Salad">
+            <label for="foodCaloriesInput">Calories</label>
+            <input type="number" id="foodCaloriesInput" placeholder="Enter calories" min="0">
+            <button id="addFoodButton" type="button">Log food entry</button>
+          </div>
+          <div class="food-tracker-list">
+            <h3>Food entries</h3>
+            <ul id="foodList" class="food-list"></ul>
+            <p id="foodSummary" class="form-message"></p>
+          </div>
+        </article>
+
+        <article class="card calendar-panel span-12">
+          <div class="calendar-header">
+            <div>
+              <span class="eyebrow">Monthly overview</span>
+              <h2 id="calendarTitle">July 2026</h2>
+            </div>
+            <div class="calendar-legend">
+              <div class="legend-item green"><span class="legend-pill"></span><span>Goal reached</span></div>
+              <div class="legend-item red"><span class="legend-pill"></span><span>Under / over goal</span></div>
+              <div class="legend-item grey"><span class="legend-pill"></span><span>No goal set</span></div>
+            </div>
+          </div>
+          <div class="calendar-grid">
+            <div class="calendar-weekdays">
+              <div>Sun</div>
+              <div>Mon</div>
+              <div>Tue</div>
+              <div>Wed</div>
+              <div>Thu</div>
+              <div>Fri</div>
+              <div>Sat</div>
+            </div>
+            <div id="calendarDays" class="calendar-days"></div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script src="/src/app.js"></script>
+  <script src="/src/calorieTracker.js"></script>
+</body>
+</html>
