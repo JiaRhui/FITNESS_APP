@@ -61,7 +61,17 @@ Then open:
 http://localhost:3000/pages/login.html
 ```
 
+## Fitness Activity Module (vBanal)
 
+- Feature 1: Workout Activity Logger
+  Log workouts for 12 sport types with smart dynamic fields, auto-calculations, personal best detection, and RPE rating.
+- Feature 2: Workout Progress Dashboard
+  Strava-inspired analytics with Chart.js graphs, streaks, personal bests, sport breakdown, and calorie trends.
+- Feature 3: Workout Planner and Calendar
+  Full interactive monthly/weekly calendar with planned vs actual tracking, drag-and-drop, and auto-completion detection.
+- Pages: WorkoutLogger.html, WorkoutDashboard.html, WorkoutPlanner.html
+- Data: localStorage (rpFitness_workouts, rpFitness_workoutPlan)
+- How to use: Open WorkoutLogger to log, WorkoutDashboard to analyse, and WorkoutPlanner to schedule ahead.
 
 ## New Feature
 
@@ -75,4 +85,15 @@ http://localhost:3000/pages/login.html
 - Dashboard card button opens `Calorie-Tracker.html`
 - Data persistence using `localStorage`
 
+## Run Locally
 
+```bash
+npm install
+npm start
+```
+
+Then open:
+
+```text
+http://localhost:3000/pages/login.html
+```
