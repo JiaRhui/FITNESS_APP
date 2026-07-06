@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RP Fitness | Workout Dashboard</title>
+  <link rel="stylesheet" href="/css/workout.css" />
+</head>
+<body class="workout-app">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="/assets/images/rp-logo.png" alt="RP Fitness logo" />
+        <div>
+          <strong>RP Fitness</strong>
+          <span>Student portal</span>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="/pages/dashboard.html">Dashboard</a>
+        <a href="/pages/WorkoutLogger.html">🏋️ Workout Logger</a>
+        <a class="active" href="/pages/WorkoutDashboard.html">📊 Progress Dashboard</a>
+        <a href="/pages/WorkoutPlanner.html">📅 Workout Planner</a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/pages/login.html">↩ Logout</a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">Fitness Activity Module</span>
+          <h1>Workout Dashboard</h1>
+          <p>Use your logged data to see progress, performance, and momentum over time.</p>
+        </div>
+      </header>
+
+      <section id="kpiRow" class="kpis"></section>
+
+      <section class="card chart-card">
+        <div class="panel-header">
+          <div>
+            <h2>Performance Timeline</h2>
+            <p class="muted">Switch views to inspect your recent training rhythm.</p>
+          </div>
+          <div id="rangeButtons" class="chip-group"></div>
+        </div>
+        <div class="chart-grid">
+          <div class="chart-panel card panel">
+            <h3>Workout frequency</h3>
+            <canvas id="frequencyChart"></canvas>
+          </div>
+          <div class="chart-panel card panel">
+            <h3>Calories burned</h3>
+            <canvas id="caloriesChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="chart-grid">
+        <div class="card panel">
+          <div class="panel-header">
+            <div>
+              <h2>Sport breakdown</h2>
+              <p class="muted">Tap a segment to focus your training view.</p>
+            </div>
+          </div>
+          <div class="chart-panel">
+            <canvas id="sportChart"></canvas>
+          </div>
+        </div>
+        <div class="card panel">
+          <div class="panel-header">
+            <div>
+              <h2>Performance trend</h2>
+              <p class="muted">Measure progress for the sport you care about most.</p>
+            </div>
+            <select id="trendSportSelect">
+              <option value="Running">Running</option>
+              <option value="Cycling">Cycling</option>
+              <option value="Gym">Gym</option>
+              <option value="Swimming">Swimming</option>
+            </select>
+          </div>
+          <div class="chart-panel">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="chart-grid">
+        <div class="card panel">
+          <div class="panel-header">
+            <div>
+              <h2>Personal bests</h2>
+              <p class="muted">Milestones you have already earned.</p>
+            </div>
+          </div>
+          <div id="achievementGrid" class="achievement-grid"></div>
+        </div>
+        <div class="card panel">
+          <div class="panel-header">
+            <div>
+              <h2>Recent activity</h2>
+              <p class="muted">The last five workouts in your timeline.</p>
+            </div>
+            <a href="/pages/WorkoutLogger.html">View all</a>
+          </div>
+          <div id="timeline" class="timeline"></div>
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-header">
+          <div>
+            <h2>This week at a glance</h2>
+            <p class="muted">A quick snapshot to keep you motivated.</p>
+          </div>
+        </div>
+        <div id="weeklySummary" class="stats-row"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="detailsModal" class="modal">
+    <div class="modal-card">
+      <div class="panel-header">
+        <h3>Workout details</h3>
+        <button id="closeModalBtn" class="btn-ghost" type="button">Close</button>
+      </div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/js/workoutDashboard.js"></script>
+</body>
+</html>
