@@ -17,9 +17,9 @@
         </div>
       </div>
       <nav class="nav-links">
-        <a href="/pages/WorkoutLogger.html">🏋️ Workout Logger</a>
-        <a href="/pages/WorkoutDashboard.html">📊 Progress Dashboard</a>
         <a class="active" href="/pages/WorkoutPlanner.html">📅 Workout Planner</a>
+        <a href="/pages/dashboard.html">🏠 Dashboard</a>
+        <a href="/pages/login.html">↩ Logout</a>
       </nav>
       <div class="sidebar-footer">
         <a href="/pages/login.html">↩ Logout</a>
@@ -31,11 +31,20 @@
         <div>
           <span class="eyebrow">Fitness Activity Module</span>
           <h1>Workout Planner</h1>
-          <p>Plan upcoming sessions, keep your calendar in sync, and track planned versus completed workouts.</p>
+          <p>Plan workouts, log gym sessions, and review progress from one place.</p>
+        </div>
+        <div class="topbar-actions">
+          <a class="btn-secondary" href="/pages/dashboard.html">← Dashboard</a>
         </div>
       </header>
 
-      <section class="card panel">
+      <div class="chip-group section-nav">
+        <a class="chip active" href="#plannerSection">Planner</a>
+        <a class="chip" href="#loggerSection">Gym Tracker</a>
+        <a class="chip" href="#dashboardSection">Progress Dashboard</a>
+      </div>
+
+      <section id="plannerSection" class="card panel section-block">
         <div class="calendar-toolbar">
           <div>
             <h2 id="calendarTitle">July 2026</h2>
@@ -62,8 +71,200 @@
         </div>
 
         <div id="calendarContainer" class="calendar-shell"></div>
-
         <div id="statsRow" class="stats-row"></div>
+      </section>
+
+      <section id="loggerSection" class="card panel section-block">
+        <div class="panel-header">
+          <div>
+            <h2>Gym Tracker</h2>
+            <p class="muted">Log each session in detail and keep your workout history close at hand.</p>
+          </div>
+          <span id="formStatus" class="badge success">Ready to log</span>
+        </div>
+
+        <div class="page-grid">
+          <section class="card panel">
+            <div class="panel-header">
+              <div>
+                <h3>Log a Workout</h3>
+                <p class="muted">Choose your sport and capture the details that matter.</p>
+              </div>
+            </div>
+
+            <div id="sportGrid" class="sport-grid"></div>
+
+            <form id="workoutForm">
+              <div class="form-grid">
+                <div class="form-group full">
+                  <label for="workoutTitle">Workout title or label</label>
+                  <input id="workoutTitle" name="workoutTitle" type="text" placeholder="Optional — we’ll auto-label it if left blank" />
+                </div>
+
+                <div class="form-group">
+                  <label for="workoutDate">Date and time</label>
+                  <input id="workoutDate" name="workoutDate" type="datetime-local" required />
+                </div>
+
+                <div class="form-group">
+                  <label for="workoutRpe">Overall feeling / RPE</label>
+                  <input id="workoutRpe" name="workoutRpe" type="range" min="1" max="10" step="1" value="6" />
+                  <div id="rpeHint" class="helper">😤 Moderate effort</div>
+                </div>
+
+                <div class="form-group">
+                  <label for="workoutCalories">Calories burned</label>
+                  <input id="workoutCalories" name="workoutCalories" type="number" min="1" step="1" required />
+                </div>
+
+                <div class="form-group full">
+                  <label for="workoutNotes">General notes</label>
+                  <textarea id="workoutNotes" name="workoutNotes" placeholder="How did it feel? Any highlights or notes?"></textarea>
+                </div>
+              </div>
+
+              <div id="sportSpecificFields"></div>
+
+              <div class="btn-row">
+                <button id="saveWorkoutBtn" class="btn-primary" type="submit">Save Workout</button>
+                <button id="cancelWorkoutBtn" class="btn-secondary" type="button">Cancel</button>
+              </div>
+              <p id="formErrors" class="error"></p>
+            </form>
+          </section>
+
+          <section class="card panel">
+            <div class="panel-header">
+              <div>
+                <h3>Workout History</h3>
+                <p class="muted">Filter and revisit your best sessions.</p>
+              </div>
+            </div>
+
+            <div class="filter-bar">
+              <select id="historySportFilter">
+                <option value="All">All sports</option>
+                <option value="Gym">Gym</option>
+                <option value="Running">Running</option>
+                <option value="Cycling">Cycling</option>
+                <option value="Swimming">Swimming</option>
+                <option value="Football">Football</option>
+                <option value="Basketball">Basketball</option>
+                <option value="Tennis">Tennis</option>
+                <option value="Boxing">Boxing</option>
+                <option value="Yoga">Yoga</option>
+                <option value="Hiking">Hiking</option>
+                <option value="Water Sports">Water Sports</option>
+                <option value="Other">Other</option>
+              </select>
+              <select id="historySort">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="calories">Most calories</option>
+                <option value="duration">Longest duration</option>
+              </select>
+            </div>
+
+            <div id="historyList" class="history-list"></div>
+            <div class="btn-row">
+              <button id="loadMoreBtn" class="btn-secondary" type="button">Load more</button>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="dashboardSection" class="card panel section-block">
+        <div class="panel-header">
+          <div>
+            <h2>Progress Dashboard</h2>
+            <p class="muted">Use your logged data to see progress, performance, and momentum over time.</p>
+          </div>
+        </div>
+
+        <section id="kpiRow" class="kpis"></section>
+
+        <section class="card chart-card">
+          <div class="panel-header">
+            <div>
+              <h3>Performance Timeline</h3>
+              <p class="muted">Switch views to inspect your recent training rhythm.</p>
+            </div>
+            <div id="rangeButtons" class="chip-group"></div>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-panel card panel">
+              <h3>Workout frequency</h3>
+              <canvas id="frequencyChart"></canvas>
+            </div>
+            <div class="chart-panel card panel">
+              <h3>Calories burned</h3>
+              <canvas id="caloriesChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="chart-grid">
+          <div class="card panel">
+            <div class="panel-header">
+              <div>
+                <h3>Sport breakdown</h3>
+                <p class="muted">Tap a segment to focus your training view.</p>
+              </div>
+            </div>
+            <div class="chart-panel">
+              <canvas id="sportChart"></canvas>
+            </div>
+          </div>
+          <div class="card panel">
+            <div class="panel-header">
+              <div>
+                <h3>Performance trend</h3>
+                <p class="muted">Measure progress for the sport you care about most.</p>
+              </div>
+              <select id="trendSportSelect">
+                <option value="Running">Running</option>
+                <option value="Cycling">Cycling</option>
+                <option value="Gym">Gym</option>
+                <option value="Swimming">Swimming</option>
+              </select>
+            </div>
+            <div class="chart-panel">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="chart-grid">
+          <div class="card panel">
+            <div class="panel-header">
+              <div>
+                <h3>Personal bests</h3>
+                <p class="muted">Milestones you have already earned.</p>
+              </div>
+            </div>
+            <div id="achievementGrid" class="achievement-grid"></div>
+          </div>
+          <div class="card panel">
+            <div class="panel-header">
+              <div>
+                <h3>Recent activity</h3>
+                <p class="muted">The last five workouts in your timeline.</p>
+              </div>
+              <a href="/pages/WorkoutPlanner.html#loggerSection">View all</a>
+            </div>
+            <div id="timeline" class="timeline"></div>
+          </div>
+        </section>
+
+        <section class="card panel">
+          <div class="panel-header">
+            <div>
+              <h3>This week at a glance</h3>
+              <p class="muted">A quick snapshot to keep you motivated.</p>
+            </div>
+          </div>
+          <div id="weeklySummary" class="stats-row"></div>
+        </section>
       </section>
     </main>
   </div>
@@ -133,6 +334,20 @@
     </form>
   </aside>
 
+  <div id="detailsModal" class="modal">
+    <div class="modal-card">
+      <div class="panel-header">
+        <h3>Workout details</h3>
+        <button id="closeModalBtn" class="btn-ghost" type="button">Close</button>
+      </div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/js/workoutLogger.js"></script>
+  <script src="/js/workoutDashboard.js"></script>
   <script src="/js/workoutPlanner.js"></script>
 </body>
 </html>

@@ -53,10 +53,14 @@ a:hover { text-decoration: underline; }
 .sidebar-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
 
 .main-content { padding: 1.4rem 1.6rem 2rem; }
-.topbar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; }
+.topbar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; gap: 1rem; }
 .topbar h1 { margin: 0 0 0.3rem; font-size: clamp(1.6rem, 3vw, 2.2rem); }
 .topbar p { margin: 0; color: var(--muted); max-width: 720px; }
+.topbar-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 .eyebrow { display: inline-block; color: var(--green-2); font-size: 0.76rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem; }
+.section-nav { margin-bottom: 1rem; }
+.section-nav a { text-decoration: none; }
+.section-block { margin-bottom: 1.1rem; }
 
 .page-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.1rem; }
 .card { background: linear-gradient(180deg, rgba(23, 38, 29, 0.96), rgba(13, 22, 17, 0.96)); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
