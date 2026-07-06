@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gym Finder</title>
+  <link rel="stylesheet" href="/styles/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .finder-shell { display: grid; gap: 1rem; }
+  </style>
+</head>
+<body class="app-body">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="/assets/images/rp-logo.png" alt="RP logo">
+        <div><strong>RP Fitness</strong><span>Student Portal</span></div>
+      </div>
+      <nav class="nav-links">
+        <a href="/pages/dashboard.html">Dashboard</a>
+        <a href="/pages/Calorie-Tracker.html">Calorie Tracker</a>
+        <a class="active" href="/pages/gym-finder.html">Gym Finder</a>
+        <button onclick="window.location.href='/logout'">Logout</button>
+      </nav>
+    </aside>
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">Facilities</span>
+          <h1>Gym & Running Track Finder</h1>
+          <p>Search for public gyms and running tracks near a Singapore postal code.</p>
+        </div>
+      </header>
+      <div id="gym-finder-root" class="finder-shell"></div>
+    </main>
+  </div>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/src/services/facilities.js"></script>
+  <script src="/src/components/MapView.jsx"></script>
+  <script src="/src/components/GymFinder.jsx"></script>
+  <script>
+    const root = document.getElementById('gym-finder-root');
+    ReactDOM.createRoot(root).render(React.createElement(window.GymFinder));
+  </script>
+</body>
+</html>
