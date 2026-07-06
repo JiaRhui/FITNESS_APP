@@ -9,16 +9,5 @@
       "date": "2026-06-26",
       "foods": []
     }
-  },
-  {
-    "email": "25045882@myrp.edu.sg",
-    "password": "LanMius07123@",
-    "createdAt": "7/6/2026, 4:08:24 AM",
-    "lastLogin": "7/6/2026, 4:08:26 AM",
-    "profile": null,
-    "calories": {
-      "date": "2026-07-06",
-      "foods": []
-    }
   }
 ]
