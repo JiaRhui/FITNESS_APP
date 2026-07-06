@@ -81,6 +81,33 @@
     "fee": "free"
   },
   {
+    "name": "Anytime Fitness Choa Chu Kang",
+    "address": "Choa Chu Kang Avenue 1, Singapore 683807",
+    "lat": 1.3768478,
+    "lng": 103.7452099,
+    "type": "gym",
+    "public": true,
+    "fee": "paid"
+  },
+  {
+    "name": "Anytime Fitness Sengkang Rivervale",
+    "address": "Rivervale Drive, Singapore 545082",
+    "lat": 1.3924116,
+    "lng": 103.9042704,
+    "type": "gym",
+    "public": true,
+    "fee": "paid"
+  },
+  {
+    "name": "ActiveSG Gym Anchorvale",
+    "address": "57 Anchorvale Road, Singapore 544964",
+    "lat": 1.3967149,
+    "lng": 103.8864497,
+    "type": "gym",
+    "public": true,
+    "fee": "free"
+  },
+  {
     "name": "Sengkang Community Gym",
     "address": "3 Sengkang Square, Singapore 545061",
     "lat": 1.3927,

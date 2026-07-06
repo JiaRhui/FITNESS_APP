@@ -1,5 +1,6 @@
 async function searchFacilities({ lat, lng, type = 'both' }) {
-  const response = await fetch(`/api/facilities?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&type=${encodeURIComponent(type)}&limit=20`);
+  const radius = 10;
+  const response = await fetch(`/api/facilities?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&type=${encodeURIComponent(type)}&radius=${encodeURIComponent(radius)}&limit=20`);
   if (!response.ok) {
     throw new Error('Unable to load facilities');
   }

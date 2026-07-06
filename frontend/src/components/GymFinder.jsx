@@ -11,12 +11,14 @@
     var _c = useState([]), results = _c[0], setResults = _c[1];
     var _d = useState(false), loading = _d[0], setLoading = _d[1];
     var _e = useState(''), message = _e[0], setMessage = _e[1];
+    var _f = useState(null), searchLocation = _f[0], setSearchLocation = _f[1];
 
     var handleSubmit = function (event) {
       event.preventDefault();
       if (!postalCode.trim()) {
         setMessage('Please enter a postal code.');
         setResults([]);
+        setSearchLocation(null);
         return;
       }
 
@@ -29,18 +31,27 @@
           var firstMatch = geocodePayload && geocodePayload.results && geocodePayload.results[0];
           if (!firstMatch || !firstMatch.LATITUDE || !firstMatch.LONGITUDE) {
             setResults([]);
+            setSearchLocation(null);
             setMessage('Invalid postal code');
             setLoading(false);
             return;
           }
 
-          return searchFacilities({ lat: firstMatch.LATITUDE, lng: firstMatch.LONGITUDE, type: type }).then(function (facilities) {
+          var origin = {
+            lat: parseFloat(firstMatch.LATITUDE),
+            lng: parseFloat(firstMatch.LONGITUDE),
+            label: firstMatch.ADDRESS || postalCode
+          };
+          setSearchLocation(origin);
+
+          return searchFacilities({ lat: origin.lat, lng: origin.lng, type: type }).then(function (facilities) {
             setResults(facilities);
             setMessage(postalCode + ' • ' + facilities.length + ' result' + (facilities.length === 1 ? '' : 's'));
           });
         })
         .catch(function () {
           setResults([]);
+          setSearchLocation(null);
           setMessage('Unable to search facilities right now.');
         })
         .finally(function () {
@@ -80,7 +91,7 @@
       ),
       searchSummary ? React.createElement('h3', { style: { margin: '0.5rem 0 0' } }, searchSummary) : null,
       React.createElement('div', { style: { width: '100%' } },
-        React.createElement(MapView, { facilities: results })
+        React.createElement(MapView, { facilities: results, searchLocation: searchLocation })
       ),
       React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' } },
         results.length ? results.map(function (facility) {
