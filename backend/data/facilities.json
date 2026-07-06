@@ -1,0 +1,92 @@
+[
+  {
+    "name": "ActiveSG Bedok Stadium",
+    "address": "1 Bedok North Road, Singapore 469659",
+    "lat": 1.3305,
+    "lng": 103.9384,
+    "type": "track",
+    "public": true,
+    "fee": "paid"
+  },
+  {
+    "name": "ActiveSG Jurong East Sports Centre",
+    "address": "21 Jurong East Street 31, Singapore 609517",
+    "lat": 1.3344,
+    "lng": 103.7404,
+    "type": "gym",
+    "public": false,
+    "fee": "paid"
+  },
+  {
+    "name": "Anytime Fitness Tampines",
+    "address": "2 Tampines Central 5, Singapore 529509",
+    "lat": 1.3521,
+    "lng": 103.9444,
+    "type": "gym",
+    "public": true,
+    "fee": "paid"
+  },
+  {
+    "name": "Bishan ActiveSG Gym",
+    "address": "5 Bishan Street 14, Singapore 579783",
+    "lat": 1.3508,
+    "lng": 103.8484,
+    "type": "gym",
+    "public": true,
+    "fee": "paid"
+  },
+  {
+    "name": "Jalan Besar Stadium",
+    "address": "80 Tyrwhitt Road, Singapore 207565",
+    "lat": 1.3098,
+    "lng": 103.8634,
+    "type": "track",
+    "public": false,
+    "fee": "paid"
+  },
+  {
+    "name": "Kallang Practice Track",
+    "address": "1 Kallang Gate Road, Singapore 397965",
+    "lat": 1.3024,
+    "lng": 103.8827,
+    "type": "track",
+    "public": true,
+    "fee": "free"
+  },
+  {
+    "name": "Our Tampines Hub Sports Hub",
+    "address": "1 Tampines Walk, Singapore 528523",
+    "lat": 1.3529,
+    "lng": 103.9413,
+    "type": "gym",
+    "public": true,
+    "fee": "free"
+  },
+  {
+    "name": "Pasir Ris Park Running Track",
+    "address": "120 Pasir Ris Central, Singapore 519640",
+    "lat": 1.3724,
+    "lng": 103.9488,
+    "type": "track",
+    "public": true,
+    "fee": "free"
+  },
+  {
+    "name": "Punggol Waterway Track",
+    "address": "11 Punggol Walk, Singapore 828670",
+    "lat": 1.4031,
+    "lng": 103.9096,
+    "type": "track",
+    "public": true,
+    "fee": "free"
+  },
+  {
+    "name": "Sengkang Community Gym",
+    "address": "3 Sengkang Square, Singapore 545061",
+    "lat": 1.3927,
+    "lng": 103.8951,
+    "type": "gym",
+    "public": true,
+    "fee": "free"
+  }
+]
