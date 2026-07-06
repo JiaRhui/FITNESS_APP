@@ -10,7 +10,7 @@ const authController = require('./controllers/authController');
 const adminController = require('./controllers/adminController');
 const { requireSession, requireAdmin } = require('./middleware/helpers');
 const dailyChecklistRoutes = require('./routes/dailyChecklistRoutes');
-const facilitiesRoutes = require('./routes/facilities');
+const workoutRoutes = require('./routes/workoutRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,22 +32,15 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/daily-checklist', dailyChecklistRoutes);
-app.use('/api/facilities', facilitiesRoutes);
+app.use('/api/workouts', workoutRoutes);
 
 app.get('/pages/admin.html', requireAdmin, (req, res) => res.sendFile(path.join(pagesRoot, 'admin.html')));
-
-app.use((req, res, next) => {
-  if (req.path.endsWith('.jsx')) {
-    res.type('application/javascript');
-  }
-  next();
-});
 
 app.use(express.static(frontendRoot));
 app.get('/', (req, res) => res.redirect('/pages/login.html'));
 app.get('/daily-checklist', (req, res) => res.sendFile(path.join(pagesRoot, 'dailyChecklist.html')));
 
-['login.html', 'signup.html', 'dashboard.html', 'admin.html'].forEach((page) => {
+['login.html', 'signup.html', 'dashboard.html', 'admin.html', 'WorkoutLogger.html', 'WorkoutDashboard.html', 'WorkoutPlanner.html'].forEach((page) => {
   app.get(`/${page}`, (req, res) => res.sendFile(path.join(pagesRoot, page)));
 });
 
