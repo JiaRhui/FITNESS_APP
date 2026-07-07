@@ -6,6 +6,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const facilitiesRoutes = require('./routes/facilities');
 const authController = require('./controllers/authController');
 const adminController = require('./controllers/adminController');
 const { requireSession, requireAdmin } = require('./middleware/helpers');
@@ -30,6 +31,7 @@ app.use(session({
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/facilities', facilitiesRoutes);
 app.use('/api/daily-checklist', dailyChecklistRoutes);
 
 app.get('/pages/admin.html', requireAdmin, (req, res) => res.sendFile(path.join(pagesRoot, 'admin.html')));
