@@ -22,8 +22,8 @@ let viewMode = 'month';
 let editingPlanId = null;
 let selectedSport = 'Running';
 
-function init() {
-  loadData();
+async function init() {
+  await loadData();
   renderSportGrid();
   bindEvents();
   renderCalendar();
@@ -42,7 +42,7 @@ function bindEvents() {
   document.getElementById('deletePlanBtn').addEventListener('click', deleteCurrentPlan);
 }
 
-function loadData() {
+async function loadData() {
   try {
     workouts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     plans = JSON.parse(localStorage.getItem(PLAN_KEY) || '[]');
@@ -50,6 +50,32 @@ function loadData() {
     workouts = [];
     plans = [];
   }
+
+  try {
+    const [workoutsResponse, plansResponse] = await Promise.all([
+      fetch('/api/workouts').catch(() => null),
+      fetch('/api/workouts/plans').catch(() => null)
+    ]);
+
+    if (workoutsResponse?.ok) {
+      const workoutsData = await workoutsResponse.json();
+      if (Array.isArray(workoutsData.workouts)) {
+        workouts = workoutsData.workouts;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts));
+      }
+    }
+
+    if (plansResponse?.ok) {
+      const plansData = await plansResponse.json();
+      if (Array.isArray(plansData.plans)) {
+        plans = plansData.plans;
+        localStorage.setItem(PLAN_KEY, JSON.stringify(plans));
+      }
+    }
+  } catch (error) {
+    console.error('Unable to sync workout planner data', error);
+  }
+
   plans = plans.map((plan) => ({ ...plan, status: getPlanStatus(plan) }));
 }
 
@@ -228,6 +254,11 @@ function handlePlanSubmit(event) {
   plans = plans.filter((item) => item.id !== plan.id);
   plans.unshift(plan);
   localStorage.setItem(PLAN_KEY, JSON.stringify(plans));
+  fetch('/api/workouts/plans', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ plans })
+  }).catch(() => {});
   renderCalendar();
   closePanel();
 }
@@ -236,6 +267,11 @@ function deleteCurrentPlan() {
   if (!editingPlanId) return;
   plans = plans.filter((plan) => plan.id !== editingPlanId);
   localStorage.setItem(PLAN_KEY, JSON.stringify(plans));
+  fetch('/api/workouts/plans', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ plans })
+  }).catch(() => {});
   renderCalendar();
   closePanel();
 }
@@ -291,4 +327,6 @@ function dateToKey(date) {
   return `${year}-${month}-${day}`;
 }
 
-window.addEventListener('DOMContentLoaded', init);
+window.addEventListener('DOMContentLoaded', () => {
+  init();
+});
