@@ -4,151 +4,177 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nutrition Tracker</title>
-  <link rel="stylesheet" href="../styles/nutrition-tracker.css" />
+  <link rel="stylesheet" href="/styles/style.css" />
+  <link rel="stylesheet" href="/styles/nutrition-tracker.css" />
 </head>
-<body>
-  <main class="nutrition-page">
-    <section class="hero">
-      <div>
-        <p class="tag">Gym App Feature</p>
-        <h1>Nutrition Tracker</h1>
-        <p>Search food macros, check suggested daily macros, and log your meals.</p>
+<body class="app-body">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="/assets/images/rp-logo.png" alt="RP logo" />
+        <div><strong>RP Fitness</strong><span>Student Portal</span></div>
       </div>
+      <nav class="nav-links">
+        <a href="/pages/dashboard.html">Dashboard</a>
+        <a href="/pages/Calorie-Tracker.html">Calorie Tracker</a>
+        <a class="active" href="/pages/nutrition-tracker.html">Nutrition Tracker</a>
+        <a href="/pages/WorkoutDashboard.html">Workout Dashboard</a>
+        <a href="/pages/dailyChecklist.html">Daily Checklist</a>
+        <button onclick="logout()">Logout</button>
+      </nav>
+    </aside>
 
-      <div class="calorie-card">
-        <span id="totalCalories">0</span>
-        <p>Total Calories</p>
-      </div>
-    </section>
-
-    <section class="layout">
-      <section class="card">
-        <h2>Find Food Macros</h2>
-        <p class="note">Enter a food name to search its protein, carbs, and fat values online.</p>
-
-        <label>
-          Food Name
-          <input type="text" id="foodSearchName" placeholder="e.g. Chicken Rice" />
-        </label>
-
-        <a id="macroGoogleLink" class="search-link" href="#" target="_blank" style="display: none;">
-          Search Nutrition Information
-        </a>
-      </section>
-
-      <section class="card">
-        <h2>Suggested Daily Macros</h2>
-        <p class="note">These are general daily recommendations based on body weight.</p>
-
-        <label>
-          Body Weight (kg)
-          <input type="number" id="bodyWeight" placeholder="e.g. 60" min="1" />
-        </label>
-
-        <div class="recommendation-grid">
-          <div class="recommendation-item">
-            <h3>Protein</h3>
-            <strong id="suggestedProtein">1.6g - 2.2g / kg</strong>
-            <p>Helps build and repair muscles.</p>
-          </div>
-
-          <div class="recommendation-item">
-            <h3>Carbs</h3>
-            <strong id="suggestedCarbs">3g - 5g / kg</strong>
-            <p>Gives energy for training.</p>
-          </div>
-
-          <div class="recommendation-item">
-            <h3>Fat</h3>
-            <strong id="suggestedFat">0.5g - 1g / kg</strong>
-            <p>Supports hormones and health.</p>
-          </div>
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">Health dashboard</span>
+          <h1>Nutrition Tracker</h1>
+          <p>Search food macros, check suggested daily macros, and log your meals.</p>
         </div>
-      </section>
-    </section>
+      </header>
 
-    <section class="layout">
-      <section class="card">
-        <h2>Meal Logging</h2>
+      <main class="nutrition-page">
+        <section class="hero">
+          <div>
+            <p class="tag">Gym App Feature</p>
+            <h1>Nutrition Tracker</h1>
+            <p>Search food macros, check suggested daily macros, and log your meals.</p>
+          </div>
 
-        <form id="mealForm" class="meal-form">
-          <label>
-            Meal Name
-            <input type="text" id="mealName" placeholder="e.g. Chicken Rice" required />
-          </label>
+          <div class="calorie-card">
+            <span id="totalCalories">0</span>
+            <p>Total Calories</p>
+          </div>
+        </section>
 
-          <label>
-            Calories
-            <input type="number" id="calories" placeholder="e.g. 650" min="0" required />
-          </label>
-
-          <div class="macro-grid">
-            <label>
-              Protein (g)
-              <input type="number" id="protein" placeholder="40" min="0" required />
-            </label>
+        <section class="layout">
+          <section class="card">
+            <h2>Find Food Macros</h2>
+            <p class="note">Enter a food name to search its protein, carbs, and fat values online.</p>
 
             <label>
-              Carbs (g)
-              <input type="number" id="carbs" placeholder="70" min="0" required />
+              Food Name
+              <input type="text" id="foodSearchName" placeholder="e.g. Chicken Rice" />
             </label>
+
+            <a id="macroGoogleLink" class="search-link" href="#" target="_blank" style="display: none;">
+              Search Nutrition Information
+            </a>
+          </section>
+
+          <section class="card">
+            <h2>Suggested Daily Macros</h2>
+            <p class="note">These are general daily recommendations based on body weight.</p>
 
             <label>
-              Fat (g)
-              <input type="number" id="fat" placeholder="18" min="0" required />
+              Body Weight (kg)
+              <input type="number" id="bodyWeight" placeholder="e.g. 60" min="1" />
             </label>
+
+            <div class="recommendation-grid">
+              <div class="recommendation-item">
+                <h3>Protein</h3>
+                <strong id="suggestedProtein">1.6g - 2.2g / kg</strong>
+                <p>Helps build and repair muscles.</p>
+              </div>
+
+              <div class="recommendation-item">
+                <h3>Carbs</h3>
+                <strong id="suggestedCarbs">3g - 5g / kg</strong>
+                <p>Gives energy for training.</p>
+              </div>
+
+              <div class="recommendation-item">
+                <h3>Fat</h3>
+                <strong id="suggestedFat">0.5g - 1g / kg</strong>
+                <p>Supports hormones and health.</p>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="layout">
+          <section class="card">
+            <h2>Meal Logging</h2>
+
+            <form id="mealForm" class="meal-form">
+              <label>
+                Meal Name
+                <input type="text" id="mealName" placeholder="e.g. Chicken Rice" required />
+              </label>
+
+              <input type="number" id="calories" placeholder="e.g. 650" min="0" required aria-label="Calories" />
+
+              <div class="macro-grid">
+                <label>
+                  Protein (g)
+                  <input type="number" id="protein" placeholder="40" min="0" required />
+                </label>
+
+                <label>
+                  Carbs (g)
+                  <input type="number" id="carbs" placeholder="70" min="0" required />
+                </label>
+
+                <label>
+                  Fat (g)
+                  <input type="number" id="fat" placeholder="18" min="0" required />
+                </label>
+              </div>
+
+              <label>
+                Date
+                <input type="date" id="mealDate" required />
+              </label>
+
+              <button type="submit">Add Meal</button>
+            </form>
+          </section>
+
+          <section class="card">
+            <h2>Macronutrient Breakdown</h2>
+
+            <div class="macro-row">
+              <div>
+                <strong id="totalProtein">0g</strong>
+                <p>Protein</p>
+              </div>
+              <div class="bar"><div id="proteinBar"></div></div>
+            </div>
+
+            <div class="macro-row">
+              <div>
+                <strong id="totalCarbs">0g</strong>
+                <p>Carbs</p>
+              </div>
+              <div class="bar"><div id="carbsBar"></div></div>
+            </div>
+
+            <div class="macro-row">
+              <div>
+                <strong id="totalFat">0g</strong>
+                <p>Fat</p>
+              </div>
+              <div class="bar"><div id="fatBar"></div></div>
+            </div>
+
+            <p class="note">Progress bars use sample daily goals: 120g protein, 250g carbs, 70g fat.</p>
+          </section>
+        </section>
+
+        <section class="card">
+          <div class="history-header">
+            <h2>Meal History</h2>
+            <button id="resetBtn" class="reset-btn" type="button">Reset Demo Data</button>
           </div>
 
-          <label>
-            Date
-            <input type="date" id="mealDate" required />
-          </label>
+          <div id="mealList" class="meal-list"></div>
+        </section>
+      </main>
+    </main>
+  </div>
 
-          <button type="submit">Add Meal</button>
-        </form>
-      </section>
-
-      <section class="card">
-        <h2>Macronutrient Breakdown</h2>
-
-        <div class="macro-row">
-          <div>
-            <strong id="totalProtein">0g</strong>
-            <p>Protein</p>
-          </div>
-          <div class="bar"><div id="proteinBar"></div></div>
-        </div>
-
-        <div class="macro-row">
-          <div>
-            <strong id="totalCarbs">0g</strong>
-            <p>Carbs</p>
-          </div>
-          <div class="bar"><div id="carbsBar"></div></div>
-        </div>
-
-        <div class="macro-row">
-          <div>
-            <strong id="totalFat">0g</strong>
-            <p>Fat</p>
-          </div>
-          <div class="bar"><div id="fatBar"></div></div>
-        </div>
-
-        <p class="note">Progress bars use sample daily goals: 120g protein, 250g carbs, 70g fat.</p>
-      </section>
-    </section>
-
-    <section class="card">
-      <div class="history-header">
-        <h2>Meal History</h2>
-        <button id="resetBtn" class="reset-btn" type="button">Reset Demo Data</button>
-      </div>
-
-      <div id="mealList" class="meal-list"></div>
-    </section>
-  </main>
-
-  <script src="../src/nutrition-tracker.js"></script>
+  <script src="/src/app.js"></script>
+  <script src="/src/nutrition-tracker.js"></script>
 </body>
 </html>
