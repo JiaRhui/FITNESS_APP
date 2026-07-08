@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "mealName": "chicken",
+    "calories": 21,
+    "protein": 21,
+    "carbs": 21,
+    "fat": 21,
+    "date": "2026-07-08"
+  }
+]
