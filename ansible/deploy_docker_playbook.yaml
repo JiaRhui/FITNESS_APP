@@ -21,13 +21,13 @@
 
     - name: Verify backend health check
       uri:
-        url: "http://fitness-backend:3000/health"
+        url: "http://localhost:3001/health"
         method: GET
         status_code: 200
 
     - name: Verify frontend login page
       uri:
-        url: "http://fitness-frontend:80/pages/login.html"
+        url: "http://localhost:3000/pages/login.html"
         method: GET
         status_code: 200
 
