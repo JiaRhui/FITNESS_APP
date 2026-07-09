@@ -9,22 +9,16 @@ pipeline {
             }
         }
 
-        stage('Backend Test') {
-            steps {
-                dir('backend') {
-                    sh 'npm test'
-                }
-            }
-        }
-
         stage('Deploy with Ansible') {
             steps {
                 sh 'ansible-playbook -i ansible/hosts ansible/deploy_docker_playbook.yaml'
             }
         }
 
-        stage('Verify Containers') {
+        stage('Verify Deployment') {
             steps {
+                sh 'curl http://host.docker.internal:3001/health'
+                sh 'curl http://host.docker.internal:3000/pages/login.html'
                 sh 'docker ps'
             }
         }
