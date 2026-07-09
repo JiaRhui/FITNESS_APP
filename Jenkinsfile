@@ -14,8 +14,10 @@ pipeline {
             }
         }
 
-        stage('Verify Containers') {
+        stage('Verify Deployment') {
             steps {
+                sh 'curl http://host.docker.internal:3001/health'
+                sh 'curl http://host.docker.internal:3000/pages/login.html'
                 sh 'docker ps'
             }
         }
