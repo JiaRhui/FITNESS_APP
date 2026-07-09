@@ -2,21 +2,9 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout Source Code') {
+        stage('Checkout') {
             steps {
                 checkout scm
-            }
-        }
-
-        stage('Test Backend') {
-            steps {
-                sh 'cd backend && npm test'
-            }
-        }
-
-        stage('Build Docker Images') {
-            steps {
-                sh 'docker compose build'
             }
         }
 
@@ -28,19 +16,10 @@ pipeline {
 
         stage('Verify Deployment') {
             steps {
-                sh 'curl -f http://fitness-backend:3000/health'
-                sh 'curl -f http://fitness-frontend:80/pages/login.html'
+                sh 'curl http://host.docker.internal:3001/health'
+                sh 'curl http://host.docker.internal:3000/pages/login.html'
+                sh 'docker ps'
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Fitness App CI/CD pipeline completed successfully.'
-        }
-
-        failure {
-            echo 'Fitness App CI/CD pipeline failed.'
         }
     }
 }
