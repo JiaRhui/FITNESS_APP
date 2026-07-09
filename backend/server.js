@@ -1,5 +1,4 @@
 const express = require('express');
-const path = require('path');
 const session = require('express-session');
 const cors = require('cors');
 
@@ -17,8 +16,6 @@ const nutritionRoutes = require('./routes/nutritionRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'rp-fitness-dev-secret';
-const frontendRoot = path.join(__dirname, '..', 'frontend');
-const pagesRoot = path.join(frontendRoot, 'pages');
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || true, credentials: true }));
 app.use(express.json());
@@ -30,6 +27,9 @@ app.use(session({
   cookie: { httpOnly: true, sameSite: 'lax', maxAge: 1000 * 60 * 60 * 4 }
 }));
 
+// =========================
+// API Routes
+// =========================
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
@@ -38,17 +38,10 @@ app.use('/api/daily-checklist', dailyChecklistRoutes);
 app.use('/api/workouts', workoutRoutes);
 app.use('/api/nutrition', nutritionRoutes);
 
-app.get('/pages/admin.html', requireAdmin, (req, res) => res.sendFile(path.join(pagesRoot, 'admin.html')));
-
-app.use(express.static(frontendRoot));
-app.get('/', (req, res) => res.redirect('/pages/login.html'));
-app.get('/daily-checklist', (req, res) => res.sendFile(path.join(pagesRoot, 'dailyChecklist.html')));
-
-['login.html', 'signup.html', 'dashboard.html', 'admin.html', 'WorkoutDashboard.html', 'WorkoutLogger.html', 'WorkoutPlanner.html', 'nutrition-tracker.html'].forEach((page) => {
-  app.get(`/${page}`, (req, res) => res.sendFile(path.join(pagesRoot, page)));
-  app.get(`/pages/${page}`, (req, res) => res.sendFile(path.join(pagesRoot, page)));
-});
-
+// =========================
+// Legacy API Endpoints
+// (kept unchanged)
+// =========================
 app.post('/signup', authController.signup);
 app.post('/login', authController.login);
 app.get('/check-session', authController.checkSession);
@@ -57,15 +50,34 @@ app.get('/get-users', adminController.getUsers);
 app.post('/delete-user', adminController.deleteUser);
 app.post('/user-overview', adminController.userOverview);
 
+// =========================
+// Health Check
+// =========================
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', service: 'fitness-backend' });
+});
+
+// =========================
+// 404
+// =========================
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
 });
 
+// =========================
+// Error Handler
+// =========================
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(err.status || 500).json({ success: false, message: err.message || 'Server error' });
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Server error'
+  });
 });
 
+// =========================
+// Start Server
+// =========================
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`RP Fitness running at http://0.0.0.0:${PORT}/pages/login.html`);
+  console.log(`RP Fitness backend running at http://0.0.0.0:${PORT}`);
 });

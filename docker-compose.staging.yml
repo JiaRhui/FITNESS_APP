@@ -1,0 +1,21 @@
+services:
+  backend-staging:
+    build: ./backend
+    container_name: fitness-backend-staging
+    ports:
+      - "3003:3000"
+    volumes:
+      - ./backend/data:/app/data
+    restart: unless-stopped
+
+  frontend-staging:
+    build:
+      context: ./frontend
+      args:
+        NGINX_CONF: nginx.staging.conf
+    container_name: fitness-frontend-staging
+    ports:
+      - "3002:80"
+    depends_on:
+      - backend-staging
+    restart: unless-stopped

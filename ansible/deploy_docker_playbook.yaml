@@ -1,54 +1,38 @@
 ---
-- name: Deploy Fitness App Docker container
+- name: Deploy RP Fitness App with Docker Compose
   hosts: local
+  connection: local
   gather_facts: false
 
   tasks:
-    - name: Verify Docker is installed
-      command: docker --version
-      changed_when: false
+    - name: Stop existing containers
+      shell: docker compose down
+      args:
+        chdir: "{{ playbook_dir }}/.."
 
-    - name: Stop existing fitness-app container if it exists
-      command: docker stop fitness-app
-      register: stop_container
-      failed_when: false
-      changed_when: stop_container.rc == 0
+    - name: Build and start containers
+      shell: docker compose up -d --build
+      args:
+        chdir: "{{ playbook_dir }}/.."
 
-    - name: Remove existing fitness-app container if it exists
-      command: docker rm fitness-app
-      register: remove_container
-      failed_when: false
-      changed_when: remove_container.rc == 0
+    - name: Wait for containers to start
+      pause:
+        seconds: 10
 
-    - name: Build Docker image fitness-app
-      command:
-        argv:
-          - docker
-          - build
-          - -t
-          - fitness-app
-          - "{{ playbook_dir }}/.."
-
-    - name: Run fitness-app container on port 3000
-      command:
-        argv:
-          - docker
-          - run
-          - -d
-          - --name
-          - fitness-app
-          - -p
-          - "3000:3000"
-          - -v
-          - "{{ playbook_dir }}/../backend/data:/app/backend/data"
-          - fitness-app
-
-    - name: Verify the app is reachable
+    - name: Verify backend health check
       uri:
-        url: http://host.docker.internal:3000
+        url: "http://localhost:3001/health"
+        method: GET
         status_code: 200
-      register: app_check
-      retries: 10
-      delay: 3
-      until: app_check.status == 200
-      changed_when: false
+
+    - name: Verify frontend login page
+      uri:
+        url: "http://localhost:3000/pages/login.html"
+        method: GET
+        status_code: 200
+
+    - name: Show deployment result
+      debug:
+        msg:
+          - "Frontend running at http://localhost:3000/pages/login.html"
+          - "Backend running at http://localhost:3001/health"
