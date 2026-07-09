@@ -2,9 +2,18 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Backend Test') {
+            steps {
+                dir('backend') {
+                    sh 'npm test'
+                }
             }
         }
 
@@ -19,5 +28,6 @@ pipeline {
                 sh 'docker ps'
             }
         }
+
     }
 }
