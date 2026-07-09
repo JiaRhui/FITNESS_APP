@@ -1,10 +1,18 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  backend:
+    build: ./backend
+    container_name: fitness-backend
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
-      - ./backend/data:/app/backend/data
+      - ./backend/data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: fitness-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
     restart: unless-stopped
