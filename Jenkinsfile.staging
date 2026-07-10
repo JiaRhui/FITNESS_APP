@@ -1,0 +1,62 @@
+pipeline {
+
+    agent any
+
+    triggers {
+        pollSCM('H/2 * * * *')
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Staging Containers') {
+            steps {
+                sh 'docker compose -f docker-compose.staging.yml build'
+            }
+        }
+
+        stage('Deploy Staging') {
+            steps {
+                sh '''
+                ansible-playbook \
+                -i ansible/hosts \
+                ansible/deploy_staging_playbook.yaml
+                '''
+            }
+        }
+
+        stage('Verify Deployment') {
+
+            steps {
+
+                sh '''
+                sleep 10
+
+                curl -f http://host.docker.internal:4001/health
+
+                curl -f http://host.docker.internal:4000/pages/login.html
+                '''
+            }
+
+        }
+
+    }
+
+    post {
+
+        success {
+            echo 'Staging deployment successful.'
+        }
+
+        failure {
+            echo 'Staging deployment failed.'
+        }
+
+    }
+
+}
