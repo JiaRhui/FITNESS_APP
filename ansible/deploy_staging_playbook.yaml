@@ -1,0 +1,60 @@
+---
+
+- name: Deploy Fitness App (Staging)
+
+  hosts: local
+
+  gather_facts: false
+
+  tasks:
+
+    - name: Stop old staging containers
+
+      command: docker compose -f docker-compose.staging.yml down
+
+      args:
+        chdir: "{{ playbook_dir }}/.."
+
+      ignore_errors: yes
+
+    - name: Build and start staging
+
+      command: docker compose -f docker-compose.staging.yml up -d --build
+
+      args:
+        chdir: "{{ playbook_dir }}/.."
+
+    - name: Wait for backend
+
+      pause:
+        seconds: 10
+
+    - name: Verify backend
+
+      uri:
+
+        url: http://host.docker.internal:4001/health
+
+        method: GET
+
+        status_code: 200
+
+    - name: Verify frontend
+
+      uri:
+
+        url: http://host.docker.internal:4000/pages/login.html
+
+        method: GET
+
+        status_code: 200
+
+    - name: Display URLs
+
+      debug:
+
+        msg:
+
+          - "Frontend: http://localhost:4000"
+
+          - "Backend: http://localhost:4001"

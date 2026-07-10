@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+    image: fitness-backend-staging:latest
+    container_name: fitness-backend-staging
+
+    ports:
+      - "4001:3000"
+
+    volumes:
+      - ./backend/data:/app/data
+
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    image: fitness-frontend-staging:latest
+    container_name: fitness-frontend-staging
+
+    ports:
+      - "4000:80"
+
+    depends_on:
+      - backend
+
+    restart: unless-stopped
