@@ -1,38 +1,49 @@
 ---
-- name: Deploy RP Fitness App with Docker Compose
+- name: Deploy RP Fitness App Production Environment
   hosts: local
   connection: local
   gather_facts: false
 
   tasks:
-    - name: Stop existing containers
-      shell: docker-compose down || true
+    - name: Stop existing production containers
+      command: docker compose down
+      args:
+        chdir: "{{ playbook_dir }}/.."
+      failed_when: false
+
+    - name: Build and start production containers
+      command: docker compose up -d --build
       args:
         chdir: "{{ playbook_dir }}/.."
 
-    - name: Build and start containers
-      shell: docker-compose up -d --build
-      args:
-        chdir: "{{ playbook_dir }}/.."
-
-    - name: Wait for containers to start
+    - name: Wait for production services to start
       pause:
         seconds: 10
 
-    - name: Verify backend health check
+    - name: Verify production backend health
       uri:
-        url: "http://fitness-backend:3000/health"
+        url: "http://host.docker.internal:3001/health"
         method: GET
         status_code: 200
+        return_content: true
+      register: backend_health
+      retries: 5
+      delay: 5
+      until: backend_health.status == 200
 
-    - name: Verify frontend login page
+    - name: Verify production frontend login page
       uri:
-        url: "http://fitness-frontend:80/pages/login.html"
+        url: "http://host.docker.internal:3000/pages/login.html"
         method: GET
         status_code: 200
+      register: frontend_health
+      retries: 5
+      delay: 5
+      until: frontend_health.status == 200
 
-    - name: Show deployment result
+    - name: Show production deployment result
       debug:
         msg:
-          - "Frontend running at http://localhost:3000/pages/login.html"
-          - "Backend running at http://localhost:3001/health"
+          - "Production frontend: http://localhost:3000/pages/login.html"
+          - "Production backend: http://localhost:3001/health"
+          - "Production deployment and health verification completed successfully."
