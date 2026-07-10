@@ -1,333 +1,324 @@
-# 🏋️ RP Fitness App
+# RP Fitness App
 
-A web-based fitness management application developed for Republic Polytechnic's DevOps Essentials module.
+> Republic Polytechnic C270 DevOps Essentials Project
 
-This project demonstrates a complete DevOps workflow using Docker, Docker Compose, Ansible, and Jenkins to automate deployment of a two-tier web application.
+## Overview
 
----
+RP Fitness App is a web application built with **Node.js**,
+**HTML/CSS/JavaScript**, **Docker**, **Docker Compose**, **Jenkins**,
+**Ansible**, and **GitHub** to demonstrate an end-to-end CI/CD pipeline
+with separate **Staging** and **Production** environments.
 
-# 📖 Table of Contents
+## Technologies
 
-- Overview
-- Project Architecture
-- Technologies Used
-- Project Structure
-- Running the Application
-- Docker Deployment
-- Ansible Deployment
-- Jenkins CI/CD
-- Health Checks
-- Troubleshooting
+-   Node.js
+-   HTML / CSS / JavaScript
+-   Nginx
+-   Docker
+-   Docker Compose
+-   Jenkins
+-   Ansible
+-   GitHub
 
----
+------------------------------------------------------------------------
 
-# 📌 Overview
+# System Architecture
 
-The RP Fitness App allows users to:
-
-- User Login & Registration
-- Workout Tracking
-- Nutrition Tracking
-- Daily Checklist
-- Gym Facilities
-- Admin Dashboard
-- User Management
-
-The application is separated into two services:
-
-- **Frontend** (Nginx)
-- **Backend** (Node.js / Express)
-
-This follows a modern two-tier architecture.
-
----
-
-# 🏗 Project Architecture
-
-```
-                 GitHub
-                    │
-             Push to main
-                    │
-                    ▼
-                Jenkins
-                    │
-          Runs Ansible Playbook
-                    │
-                    ▼
-            Docker Compose
-                    │
-         ┌──────────┴──────────┐
-         ▼                     ▼
- Frontend Container      Backend Container
-     (Nginx)             (Node / Express)
-   Port 3000             Port 3001
+``` text
+Browser
+   │
+   ▼
+Frontend (Nginx)
+   │ REST API
+   ▼
+Backend (Node.js)
 ```
 
----
+------------------------------------------------------------------------
 
-# 💻 Technologies Used
+# DevOps Workflow
 
-## Frontend
-
-- HTML
-- CSS
-- JavaScript
-- Nginx
-
-## Backend
-
-- Node.js
-- Express.js
-- Express Session
-
-## DevOps
-
-- Docker
-- Docker Compose
-- Ansible
-- Jenkins
-
----
-
-# 📂 Project Structure
-
+``` text
+feature/*
+      │
+      ▼
+Pull Request
+      │
+      ▼
+staging
+      │
+      ▼
+Fitness-App-Staging
+      │
+      ▼
+Docker Compose (Staging)
+      │
+      ▼
+Ansible Deployment
+      │
+      ▼
+Testing
+      │
+      ▼
+Merge staging → main
+      │
+      ▼
+Fitness-App-Production
+      │
+      ▼
+Docker Compose (Production)
+      │
+      ▼
+Production Environment
 ```
+
+------------------------------------------------------------------------
+
+# Branch Strategy
+
+-   **main** -- Production
+-   **staging** -- Integration/Staging
+-   **feature/**\* -- Individual feature development
+
+All development is performed on feature branches, merged into
+**staging**, tested automatically, and only then promoted to **main**.
+
+------------------------------------------------------------------------
+
+# Jenkins Pipelines
+
+## Fitness-App-Staging
+
+-   Branch: `staging`
+-   Pipeline: `Jenkinsfile.staging`
+
+Stages:
+
+1.  Checkout Source Code
+2.  Build Docker Images
+3.  Deploy with Ansible
+4.  Verify Backend
+5.  Verify Frontend
+
+## Fitness-App-Production
+
+-   Branch: `main`
+-   Pipeline: `Jenkinsfile`
+
+Stages:
+
+1.  Checkout Source Code
+2.  Build Docker Images
+3.  Tag Docker Images
+4.  Push Images to Docker Hub
+5.  Deploy with Ansible
+6.  Verify Backend Health
+7.  Verify Frontend
+
+------------------------------------------------------------------------
+
+# Docker
+
+## Production
+
+Compose:
+
+`docker-compose.yml`
+
+Ports
+
+  Service    Host
+  ---------- ------
+  Frontend   3000
+  Backend    3001
+
+## Staging
+
+Compose:
+
+`docker-compose.staging.yml`
+
+Ports
+
+  Service    Host
+  ---------- ------
+  Frontend   4000
+  Backend    4001
+
+------------------------------------------------------------------------
+
+# Ansible
+
+## Production
+
+`ansible/deploy_docker_playbook.yaml`
+
+Functions:
+
+-   Stop existing containers
+-   Build/start Docker Compose
+-   Wait for startup
+-   Backend health verification
+-   Frontend verification
+
+## Staging
+
+`ansible/deploy_staging_playbook.yaml`
+
+Same deployment workflow for staging environment.
+
+------------------------------------------------------------------------
+
+# Repository Structure
+
+``` text
 FITNESS_APP
-│
-├── backend
-│   ├── controllers
-│   ├── middleware
-│   ├── models
-│   ├── routes
-│   ├── data
-│   ├── Dockerfile
-│   ├── package.json
-│   └── server.js
-│
-├── frontend
-│   ├── assets
-│   ├── pages
-│   ├── src
-│   ├── styles
-│   ├── Dockerfile
-│   └── nginx.conf
-│
-├── ansible
-│   ├── ansible.cfg
-│   ├── hosts
-│   ├── deploy_docker_playbook.yaml
-│   └── test_connection_playbook.yaml
-│
+├── backend/
+├── frontend/
+├── ansible/
 ├── docker-compose.yml
-├── Dockerfile.jenkins
+├── docker-compose.staging.yml
 ├── Jenkinsfile
+├── Jenkinsfile.staging
 └── README.md
 ```
 
----
+------------------------------------------------------------------------
 
-# 🚀 Running the Application
+# Running Locally
 
-## Prerequisites
-
-- Docker Desktop
-- Docker Compose
-- Git
-
----
-
-## Clone Repository
-
-```bash
-git clone <repository-url>
-cd FITNESS_APP
-```
-
----
-
-## Start the Application
-
-```bash
+``` bash
 docker compose up -d --build
 ```
 
-Docker Compose automatically:
+Stop:
 
-- Builds backend image
-- Builds frontend image
-- Creates Docker network
-- Starts backend container
-- Starts frontend container
-
----
-
-## Stop the Application
-
-```bash
+``` bash
 docker compose down
 ```
 
----
+------------------------------------------------------------------------
 
-# 🌐 Access the Application
+# Running Staging
 
-## Frontend
-
-```
-http://localhost:3000/pages/login.html
+``` bash
+docker compose -f docker-compose.staging.yml up -d --build
 ```
 
-## Backend Health Check
+------------------------------------------------------------------------
 
-```
-http://localhost:3001/health
-```
+# Deploy Using Ansible
 
----
+Production
 
-# 🐳 Docker Architecture
-
-The project is split into two containers.
-
-## Frontend Container
-
-- Nginx
-- Serves HTML
-- Serves CSS
-- Serves JavaScript
-
-Port:
-
-```
-3000
-```
-
----
-
-## Backend Container
-
-- Express.js
-- REST API
-- Authentication
-- Workout APIs
-- Nutrition APIs
-
-Port:
-
-```
-3001
-```
-
----
-
-# 🤖 Deploy using Ansible
-
-Run:
-
-```bash
+``` bash
 ansible-playbook -i ansible/hosts ansible/deploy_docker_playbook.yaml
 ```
 
-The playbook will:
+Staging
 
-1. Stop existing containers
-2. Build Docker images
-3. Start Docker Compose
-4. Verify backend health
-5. Verify frontend accessibility
-
----
-
-# 🔄 Jenkins Pipeline
-
-The Jenkins pipeline automates deployment whenever code is pushed to the main branch.
-
-Pipeline stages:
-
-```
-Checkout Source Code
-
-↓
-
-Deploy with Ansible
-
-↓
-
-Verify Backend
-
-↓
-
-Verify Frontend
-
-↓
-
-Deployment Complete
+``` bash
+ansible-playbook -i ansible/hosts ansible/deploy_staging_playbook.yaml
 ```
 
----
+------------------------------------------------------------------------
 
-# ❤️ Health Checks
+# Health Checks
 
-Backend:
+## Production
 
-```
-GET /health
-```
+Frontend
 
-Returns:
+`http://localhost:3000/pages/login.html`
 
-```json
-{
-  "status": "OK",
-  "service": "fitness-backend"
-}
-```
+Backend
 
----
+`http://localhost:3001/health`
 
-# 🔧 Useful Commands
+## Staging
 
-Start containers
+Frontend
 
-```bash
-docker compose up -d --build
-```
+`http://localhost:4000/pages/login.html`
 
-Stop containers
+Backend
 
-```bash
-docker compose down
-```
+`http://localhost:4001/health`
 
-View running containers
+------------------------------------------------------------------------
 
-```bash
-docker ps
-```
+# Features
 
-View logs
+-   User Authentication
+-   Workout Tracker
+-   Nutrition Tracker
+-   Daily Checklist
+-   Gym Locator
+-   Dashboard
+-   Admin Management
 
-```bash
-docker logs fitness-backend
-docker logs fitness-frontend
-```
+------------------------------------------------------------------------
 
-Run Ansible
+# CI/CD Summary
 
-```bash
-ansible-playbook -i ansible/hosts ansible/deploy_docker_playbook.yaml
-```
+1.  Developer pushes code to a feature branch.
+2.  Pull Request is created into `staging`.
+3.  Jenkins Staging pipeline automatically builds and deploys.
+4.  Team validates the staging environment.
+5.  Staging is merged into `main`.
+6.  Jenkins Production pipeline automatically builds, tags, pushes
+    Docker images, deploys with Ansible, and performs health
+    verification.
 
----
+------------------------------------------------------------------------
 
-# 👥 Contributors
+# C270 Requirement Mapping
 
-- Jia Rhui
-- Team Members
+  Requirement              Status
+  ------------------------ --------
+  GitHub                   ✅
+  Branching                ✅
+  Pull Requests            ✅
+  Docker                   ✅
+  Docker Compose           ✅
+  Jenkins                  ✅
+  CI/CD                    ✅
+  Ansible                  ✅
+  Automatic Deployment     ✅
+  Staging Environment      ✅
+  Production Environment   ✅
+  Health Verification      ✅
 
----
+Optional security tools (SonarQube, Trivy, Hadolint, Bandit, OWASP) were
+intentionally excluded from this implementation.
 
-# 📄 License
+------------------------------------------------------------------------
 
-Republic Polytechnic DevOps Essentials Project.
+# Lessons Learned
+
+-   Implemented a complete Git branching workflow.
+-   Automated deployments using Jenkins and Ansible.
+-   Separated staging and production environments.
+-   Used Docker Compose to ensure consistent deployments.
+-   Implemented automated health verification after deployment.
+-   Learned to troubleshoot container networking and CI/CD pipelines.
+
+------------------------------------------------------------------------
+
+# Future Improvements
+
+-   SonarQube integration
+-   Trivy image scanning
+-   OWASP Dependency Check
+-   Kubernetes deployment
+-   Cloud deployment (AWS/Azure)
+
+------------------------------------------------------------------------
+
+# Team
+
+Republic Polytechnic
+
+C270 DevOps Essentials
+
+RP Fitness App Project
