@@ -147,6 +147,8 @@ async function viewUserOverview(email) {
       <p><strong>Last login:</strong> ${data.overview.lastLogin}</p>
       <p><strong>Foods logged:</strong> ${data.overview.foodCount}</p>
       <p><strong>Total calories:</strong> ${data.overview.totalCalories}</p>
+      <p><strong>Workouts logged:</strong> ${data.overview.workoutCount}</p>
+      <p><strong>Workout plans:</strong> ${data.overview.workoutPlanCount}</p>
     </div>
   `;
 }

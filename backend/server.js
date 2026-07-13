@@ -46,9 +46,9 @@ app.post('/signup', authController.signup);
 app.post('/login', authController.login);
 app.get('/check-session', authController.checkSession);
 app.get('/logout', authController.logout);
-app.get('/get-users', adminController.getUsers);
-app.post('/delete-user', adminController.deleteUser);
-app.post('/user-overview', adminController.userOverview);
+app.get('/get-users', requireSession, requireAdmin, adminController.getUsers);
+app.post('/delete-user', requireSession, requireAdmin, adminController.deleteUser);
+app.post('/user-overview', requireSession, requireAdmin, adminController.userOverview);
 
 // =========================
 // Health Check
