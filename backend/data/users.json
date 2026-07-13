@@ -3,7 +3,7 @@
     "email": "25003399@myrp.edu.sg",
     "password": "testing",
     "createdAt": "6/26/2026, 6:51:07 AM",
-    "lastLogin": "7/9/2026, 8:14:27 AM",
+    "lastLogin": "7/13/2026, 1:48:19 AM",
     "profile": null,
     "calories": {
       "date": "2026-06-26",
@@ -18,6 +18,17 @@
     "profile": null,
     "calories": {
       "date": "2026-07-08",
+      "foods": []
+    }
+  },
+  {
+    "email": "25003333@myrp.edu.sg",
+    "password": "testing",
+    "createdAt": "7/13/2026, 1:47:28 AM",
+    "lastLogin": "7/13/2026, 1:48:07 AM",
+    "profile": null,
+    "calories": {
+      "date": "2026-07-13",
       "foods": []
     }
   }

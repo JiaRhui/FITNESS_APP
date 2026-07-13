@@ -1,5 +1,18 @@
 const STORAGE_KEY = 'rpFitness_workouts';
 const PLAN_KEY = 'rpFitness_workoutPlan';
+let currentUserEmail = '';
+
+function userStorageKey(baseKey) { return `${baseKey}:${currentUserEmail}`; }
+
+async function loadCurrentUser() {
+  const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
+  const data = await response.json();
+  if (!response.ok || !data.loggedIn || !data.email || data.email === 'admin') {
+    window.location.href = '/pages/login.html';
+    throw new Error('Login required');
+  }
+  currentUserEmail = String(data.email).trim().toLowerCase();
+}
 let workouts = [];
 let plans = [];
 let activeRange = 'week';
@@ -13,8 +26,9 @@ const RANGE_LABELS = {
   all: 'All Time'
 };
 
-function init() {
-  loadData();
+async function init() {
+  await loadCurrentUser();
+  await loadData();
   bindEvents();
   renderKpis();
   renderRangeButtons();
@@ -35,13 +49,31 @@ function bindEvents() {
   });
 }
 
-function loadData() {
+async function loadData() {
   try {
-    workouts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    plans = JSON.parse(localStorage.getItem(PLAN_KEY) || '[]');
+    workouts = JSON.parse(localStorage.getItem(userStorageKey(STORAGE_KEY)) || '[]');
+    plans = JSON.parse(localStorage.getItem(userStorageKey(PLAN_KEY)) || '[]');
   } catch (error) {
     workouts = [];
     plans = [];
+  }
+  try {
+    const [workoutResponse, planResponse] = await Promise.all([
+      fetch('/api/workouts', { credentials: 'same-origin' }),
+      fetch('/api/workouts/plans', { credentials: 'same-origin' })
+    ]);
+    if (workoutResponse.ok) {
+      const data = await workoutResponse.json();
+      workouts = Array.isArray(data.workouts) ? data.workouts : [];
+      localStorage.setItem(userStorageKey(STORAGE_KEY), JSON.stringify(workouts));
+    }
+    if (planResponse.ok) {
+      const data = await planResponse.json();
+      plans = Array.isArray(data.plans) ? data.plans : [];
+      localStorage.setItem(userStorageKey(PLAN_KEY), JSON.stringify(plans));
+    }
+  } catch (error) {
+    console.error('Unable to sync dashboard data', error);
   }
   workouts = workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
 }

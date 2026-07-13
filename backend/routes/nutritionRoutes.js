@@ -1,10 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const { NutritionMeal, readNutritionMeals, saveNutritionMeals } = require('../models/nutritionModel');
+const { requireSession, normalizeEmail } = require('../middleware/helpers');
 
-let meals = readNutritionMeals();
+router.use(requireSession);
 
-function getTotals(items = meals) {
+function getCurrentUserEmail(req) {
+  return normalizeEmail(req.session.user);
+}
+
+function getUserMeals(allMeals, email) {
+  return allMeals.filter((meal) => normalizeEmail(meal.ownerEmail) === email);
+}
+
+function getTotals(items = []) {
   return items.reduce(
     (total, meal) => {
       total.calories += Number(meal.calories) || 0;
@@ -20,94 +29,77 @@ function getTotals(items = meals) {
 function getRecommendations(weight) {
   return {
     weightKg: weight,
-    protein: {
-      min: Math.round(weight * 1.6),
-      max: Math.round(weight * 2.2),
-      unit: 'g/day'
-    },
-    carbs: {
-      min: Math.round(weight * 3),
-      max: Math.round(weight * 5),
-      unit: 'g/day'
-    },
-    fat: {
-      min: Math.round(weight * 0.5),
-      max: Math.round(weight * 1),
-      unit: 'g/day'
-    }
+    protein: { min: Math.round(weight * 1.6), max: Math.round(weight * 2.2), unit: 'g/day' },
+    carbs: { min: Math.round(weight * 3), max: Math.round(weight * 5), unit: 'g/day' },
+    fat: { min: Math.round(weight * 0.5), max: Math.round(weight * 1), unit: 'g/day' }
   };
 }
 
-// GET suggested daily protein, carbs and fat based on body weight
 router.get('/recommendations', (req, res) => {
   const weight = Number(req.query.weight);
-
   if (!weight || weight <= 0) {
     return res.status(400).json({
       message: 'Please provide a valid weight in kg, for example /api/nutrition/recommendations?weight=60'
     });
   }
-
-  res.json(getRecommendations(weight));
+  return res.json(getRecommendations(weight));
 });
 
-// GET all meals
 router.get('/', (req, res) => {
-  meals = readNutritionMeals();
-  res.json({
-    meals,
-    totals: getTotals(meals)
-  });
+  const email = getCurrentUserEmail(req);
+  const userMeals = getUserMeals(readNutritionMeals(), email);
+  return res.json({ meals: userMeals, totals: getTotals(userMeals) });
 });
 
-// POST add meal
 router.post('/', (req, res) => {
   const { mealName, calories, protein, carbs, fat, date } = req.body;
-
   if (!mealName || calories === undefined || protein === undefined || carbs === undefined || fat === undefined) {
-    return res.status(400).json({
-      message: 'Meal name, calories, protein, carbs, and fat are required.'
-    });
+    return res.status(400).json({ message: 'Meal name, calories, protein, carbs, and fat are required.' });
   }
 
-  meals = readNutritionMeals();
-  const newId = meals.length > 0 ? Math.max(...meals.map((meal) => meal.id)) + 1 : 1;
-  const newMeal = new NutritionMeal(newId, mealName, calories, protein, carbs, fat, date);
+  const email = getCurrentUserEmail(req);
+  const allMeals = readNutritionMeals();
+  const newId = allMeals.length > 0 ? Math.max(...allMeals.map((meal) => Number(meal.id) || 0)) + 1 : 1;
+  const newMeal = new NutritionMeal(newId, email, mealName, calories, protein, carbs, fat, date);
+  allMeals.push(newMeal);
+  saveNutritionMeals(allMeals);
 
-  meals.push(newMeal);
-  saveNutritionMeals(meals);
-
-  res.status(201).json({
+  const userMeals = getUserMeals(allMeals, email);
+  return res.status(201).json({
     message: 'Meal added successfully.',
     meal: newMeal,
-    totals: getTotals(meals)
+    totals: getTotals(userMeals)
   });
 });
 
-// DELETE meal
+router.delete('/', (req, res) => {
+  const email = getCurrentUserEmail(req);
+  const allMeals = readNutritionMeals();
+  const remainingMeals = allMeals.filter((meal) => normalizeEmail(meal.ownerEmail) !== email);
+  saveNutritionMeals(remainingMeals);
+  return res.json({ message: 'Your nutrition log was cleared successfully.', totals: getTotals([]) });
+});
+
 router.delete('/:id', (req, res) => {
-  meals = readNutritionMeals();
+  const email = getCurrentUserEmail(req);
   const mealId = Number(req.params.id);
-  const oldLength = meals.length;
+  const allMeals = readNutritionMeals();
+  const targetMeal = allMeals.find((meal) => Number(meal.id) === mealId);
 
-  meals = meals.filter((meal) => meal.id !== mealId);
-
-  if (meals.length === oldLength) {
+  if (!targetMeal || normalizeEmail(targetMeal.ownerEmail) !== email) {
     return res.status(404).json({ message: 'Meal not found.' });
   }
 
-  saveNutritionMeals(meals);
-
-  res.json({
-    message: 'Meal deleted successfully.',
-    totals: getTotals(meals)
-  });
+  const remainingMeals = allMeals.filter((meal) => Number(meal.id) !== mealId);
+  saveNutritionMeals(remainingMeals);
+  const userMeals = getUserMeals(remainingMeals, email);
+  return res.json({ message: 'Meal deleted successfully.', totals: getTotals(userMeals) });
 });
 
-// GET macro summary
 router.get('/summary/macros', (req, res) => {
-  meals = readNutritionMeals();
-  res.json(getTotals(meals));
+  const email = getCurrentUserEmail(req);
+  const userMeals = getUserMeals(readNutritionMeals(), email);
+  return res.json(getTotals(userMeals));
 });
 
 module.exports = router;
