@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 class NutritionMeal {
-  constructor(id, mealName, calories, protein, carbs, fat, date) {
+  constructor(id, ownerEmail, mealName, calories, protein, carbs, fat, date) {
     this.id = id;
+    this.ownerEmail = String(ownerEmail || '').trim().toLowerCase();
     this.mealName = mealName;
     this.calories = Number(calories);
     this.protein = Number(protein);
@@ -29,19 +30,22 @@ function readNutritionMeals(dataFile = DATA_FILE) {
   const parsed = JSON.parse(rawData);
   if (!Array.isArray(parsed)) return [];
 
-  return parsed.map((meal) => {
-    if (meal instanceof NutritionMeal) return meal;
-    return new NutritionMeal(meal.id, meal.mealName, meal.calories, meal.protein, meal.carbs, meal.fat, meal.date);
-  });
+  return parsed.map((meal) => new NutritionMeal(
+    meal.id,
+    meal.ownerEmail,
+    meal.mealName,
+    meal.calories,
+    meal.protein,
+    meal.carbs,
+    meal.fat,
+    meal.date
+  ));
 }
 
 function saveNutritionMeals(meals, dataFile = DATA_FILE) {
   ensureDataFile(dataFile);
   fs.writeFileSync(dataFile, JSON.stringify(meals, null, 2));
 }
-
-NutritionMeal.readNutritionMeals = readNutritionMeals;
-NutritionMeal.saveNutritionMeals = saveNutritionMeals;
 
 module.exports = {
   NutritionMeal,

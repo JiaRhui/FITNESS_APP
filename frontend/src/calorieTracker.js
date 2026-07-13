@@ -1,6 +1,21 @@
 const STORAGE_GOALS = 'rpFitnessCalorieGoals';
 const STORAGE_FOOD = 'rpFitnessFoodLogs';
 const STORAGE_RECOMMENDED = 'rpFitnessRecommendedIntake';
+let currentUserEmail = '';
+
+function userStorageKey(baseKey) {
+  return `${baseKey}:${currentUserEmail}`;
+}
+
+async function loadCurrentUser() {
+  const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
+  const data = await response.json();
+  if (!response.ok || !data.loggedIn || !data.email || data.email === 'admin') {
+    window.location.href = '/pages/login.html';
+    throw new Error('Login required');
+  }
+  currentUserEmail = String(data.email).trim().toLowerCase();
+}
 
 const goalDateInput = document.getElementById('goalDateInput');
 const calorieGoalInput = document.getElementById('calorieGoalInput');
@@ -35,7 +50,7 @@ let calendarDate = new Date();
 
 function loadJSON(key, fallback) {
   try {
-    const value = localStorage.getItem(key);
+    const value = localStorage.getItem(userStorageKey(key));
     return value ? JSON.parse(value) : fallback;
   } catch (error) {
     return fallback;
@@ -43,7 +58,7 @@ function loadJSON(key, fallback) {
 }
 
 function saveJSON(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
+  localStorage.setItem(userStorageKey(key), JSON.stringify(data));
 }
 
 function formatDate(date) {
@@ -327,8 +342,13 @@ function renderAll() {
   renderCalendar();
 }
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
   if (goalDateInput && foodDateInput && saveGoalButton) {
-    initCalorieTracker();
+    try {
+      await loadCurrentUser();
+      initCalorieTracker();
+    } catch (error) {
+      console.error(error);
+    }
   }
 });

@@ -28,6 +28,22 @@ const DAILY_GOALS = {
 };
 
 let meals = [];
+let currentUserEmail = "";
+
+function getLocalStorageKey() {
+  return `nutritionMeals:${currentUserEmail}`;
+}
+
+async function ensureLoggedInUser() {
+  const response = await fetch("/api/auth/session", { credentials: "same-origin" });
+  const data = await response.json();
+  if (!response.ok || !data.loggedIn || !data.email || data.email === "admin") {
+    window.location.href = "/pages/login.html";
+    throw new Error("Login required");
+  }
+  currentUserEmail = String(data.email).trim().toLowerCase();
+}
+
 document.getElementById("mealDate").value = new Date().toISOString().split("T")[0];
 
 foodSearchName.addEventListener("input", () => {
@@ -54,7 +70,7 @@ bodyWeight.addEventListener("input", async () => {
   }
 
   try {
-    const response = await fetch(`${RECOMMENDATION_URL}?weight=${weight}`);
+    const response = await fetch(`${RECOMMENDATION_URL}?weight=${weight}`, { credentials: "same-origin" });
 
     if (!response.ok) {
       throw new Error("Backend not connected");
@@ -73,7 +89,7 @@ bodyWeight.addEventListener("input", async () => {
 
 async function loadMeals() {
   try {
-    const response = await fetch(API_URL);
+    const response = await fetch(API_URL, { credentials: "same-origin" });
 
     if (!response.ok) {
       throw new Error("Backend not connected");
@@ -82,7 +98,7 @@ async function loadMeals() {
     const data = await response.json();
     meals = data.meals || [];
   } catch (error) {
-    meals = JSON.parse(localStorage.getItem("nutritionMeals")) || [];
+    meals = JSON.parse(localStorage.getItem(getLocalStorageKey())) || [];
   }
 
   renderMeals();
@@ -94,6 +110,7 @@ async function addMeal(meal) {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify(meal)
     });
 
@@ -105,7 +122,7 @@ async function addMeal(meal) {
   } catch (error) {
     meal.id = Date.now();
     meals.push(meal);
-    localStorage.setItem("nutritionMeals", JSON.stringify(meals));
+    localStorage.setItem(getLocalStorageKey(), JSON.stringify(meals));
     renderMeals();
     updateMacros();
   }
@@ -113,7 +130,7 @@ async function addMeal(meal) {
 
 async function deleteMeal(id) {
   try {
-    const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    const response = await fetch(`${API_URL}/${id}`, { method: "DELETE", credentials: "same-origin" });
 
     if (!response.ok) {
       throw new Error("Backend not connected");
@@ -122,7 +139,7 @@ async function deleteMeal(id) {
     await loadMeals();
   } catch (error) {
     meals = meals.filter(meal => meal.id !== id);
-    localStorage.setItem("nutritionMeals", JSON.stringify(meals));
+    localStorage.setItem(getLocalStorageKey(), JSON.stringify(meals));
     renderMeals();
     updateMacros();
   }
@@ -198,11 +215,27 @@ mealForm.addEventListener("submit", event => {
   document.getElementById("mealDate").value = new Date().toISOString().split("T")[0];
 });
 
-resetBtn.addEventListener("click", () => {
-  localStorage.removeItem("nutritionMeals");
+resetBtn.addEventListener("click", async () => {
+  try {
+    const response = await fetch(API_URL, { method: "DELETE", credentials: "same-origin" });
+    if (!response.ok) throw new Error("Unable to clear backend log");
+  } catch (error) {
+    console.error(error);
+  }
+
+  localStorage.removeItem(getLocalStorageKey());
   meals = [];
   renderMeals();
   updateMacros();
 });
 
-loadMeals();
+async function initialiseNutritionTracker() {
+  try {
+    await ensureLoggedInUser();
+    await loadMeals();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+initialiseNutritionTracker();

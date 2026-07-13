@@ -1,11 +1,22 @@
 [
   {
     "id": 1,
+    "ownerEmail": "",
     "mealName": "chicken",
     "calories": 21,
     "protein": 21,
     "carbs": 21,
     "fat": 21,
     "date": "2026-07-08"
+  },
+  {
+    "id": 2,
+    "ownerEmail": "25003399@myrp.edu.sg",
+    "mealName": "chicken",
+    "calories": 20,
+    "protein": 2,
+    "carbs": 2,
+    "fat": 2,
+    "date": "2026-07-13"
   }
 ]
