@@ -1,7 +1,5 @@
-const HABIT_STORAGE_KEY = 'daily-habit-checklist';
 let currentUserEmail = '';
-
-function userHabitStorageKey() { return `${HABIT_STORAGE_KEY}:${currentUserEmail}`; }
+let habitState = null;
 
 async function loadCurrentUser() {
   const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
@@ -54,44 +52,35 @@ function createEmptyMonthState(monthKey) {
   return { monthKey, days };
 }
 
-function loadHabitState() {
-  try {
-    const storedState = window.localStorage.getItem(userHabitStorageKey());
-    if (!storedState) return createEmptyMonthState(getMonthKey());
+async function loadHabitState() {
+  const response = await fetch('/api/daily-checklist', {
+    credentials: 'same-origin'
+  });
+  const data = await response.json();
 
-    const parsedState = JSON.parse(storedState);
-    const monthKey = getMonthKey();
-    if (!parsedState || parsedState.monthKey !== monthKey) {
-      return createEmptyMonthState(monthKey);
-    }
-
-    const [year, month] = monthKey.split('-').map(Number);
-    const totalDays = getDaysInMonth(year, month - 1);
-    const days = { ...(parsedState.days || {}) };
-
-    for (let day = 1; day <= totalDays; day += 1) {
-      const dayLabel = String(day).padStart(2, '0');
-      if (!days[dayLabel]) {
-        const dateLabel = `${year}-${String(month).padStart(2, '0')}-${dayLabel}`;
-        days[dayLabel] = {
-          date: dateLabel,
-          habits: {
-            calorieGoal: false,
-            fitnessWorkout: false
-          }
-        };
-      }
-    }
-
-    return { monthKey, days };
-  } catch (error) {
-    console.error('Unable to load habit state', error);
-    return createEmptyMonthState(getMonthKey());
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Unable to load daily checklist');
   }
+
+  habitState = data.checklist;
+  return habitState;
 }
 
-function saveHabitState(state) {
-  window.localStorage.setItem(userHabitStorageKey(), JSON.stringify(state));
+async function saveHabitTick(habitKey, completed) {
+  const response = await fetch('/api/daily-checklist', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify({ habitKey, completed })
+  });
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || 'Unable to save checklist');
+  }
+
+  habitState = data.checklist;
+  return habitState;
 }
 
 function calculateHabitProgress(dayEntries, todayDateLabel = getDateLabel()) {
@@ -146,7 +135,7 @@ function renderHabitTracker() {
   const root = document.getElementById('habitTrackerRoot');
   if (!root) return;
 
-  const state = loadHabitState();
+  const state = habitState;
   const todayDateLabel = getDateLabel();
   const todayEntry = getCurrentDayEntry(state, todayDateLabel);
   const progress = calculateHabitProgress(Object.values(state.days), todayDateLabel);
@@ -226,29 +215,35 @@ function renderHabitTracker() {
 
   const checkboxes = root.querySelectorAll('input[data-habit-key]');
   checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener('change', (event) => {
+    checkbox.addEventListener('change', async (event) => {
       const habitKey = event.target.getAttribute('data-habit-key');
-      const nextState = loadHabitState();
-      const currentDateLabel = getDateLabel();
-      const entry = getCurrentDayEntry(nextState, currentDateLabel);
-      entry.habits[habitKey] = event.target.checked;
-      nextState.days[currentDateLabel.slice(-2)] = entry;
-      saveHabitState(nextState);
-      renderHabitTracker();
+      const completed = event.target.checked;
+      event.target.disabled = true;
+
+      try {
+        await saveHabitTick(habitKey, completed);
+        renderHabitTracker();
+      } catch (error) {
+        console.error('Unable to save checklist tick', error);
+        event.target.checked = !completed;
+        event.target.disabled = false;
+        alert('Unable to save checklist. Please try again.');
+      }
     });
   });
 }
 
-function initHabitTracker() {
+async function initHabitTracker() {
   const root = document.getElementById('habitTrackerRoot');
   if (!root) return;
+  await loadHabitState();
   renderHabitTracker();
 }
 
 if (typeof window !== 'undefined') {
   window.addEventListener('load', async () => {
     await loadCurrentUser();
-    initHabitTracker();
+    await initHabitTracker();
   });
 }
 
