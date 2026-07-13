@@ -1,5 +1,18 @@
 const STORAGE_KEY = 'rpFitness_workouts';
 const PLAN_KEY = 'rpFitness_workoutPlan';
+let currentUserEmail = '';
+
+function userStorageKey(baseKey) { return `${baseKey}:${currentUserEmail}`; }
+
+async function loadCurrentUser() {
+  const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
+  const data = await response.json();
+  if (!response.ok || !data.loggedIn || !data.email || data.email === 'admin') {
+    window.location.href = '/pages/login.html';
+    throw new Error('Login required');
+  }
+  currentUserEmail = String(data.email).trim().toLowerCase();
+}
 const SPORT_OPTIONS = [
   { key: 'Gym', label: 'Gym', emoji: '🏋️' },
   { key: 'Running', label: 'Running', emoji: '🏃' },
@@ -23,6 +36,7 @@ let editingPlanId = null;
 let selectedSport = 'Running';
 
 async function init() {
+  await loadCurrentUser();
   await loadData();
   renderSportGrid();
   bindEvents();
@@ -44,8 +58,8 @@ function bindEvents() {
 
 async function loadData() {
   try {
-    workouts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    plans = JSON.parse(localStorage.getItem(PLAN_KEY) || '[]');
+    workouts = JSON.parse(localStorage.getItem(userStorageKey(STORAGE_KEY)) || '[]');
+    plans = JSON.parse(localStorage.getItem(userStorageKey(PLAN_KEY)) || '[]');
   } catch (error) {
     workouts = [];
     plans = [];
@@ -61,7 +75,7 @@ async function loadData() {
       const workoutsData = await workoutsResponse.json();
       if (Array.isArray(workoutsData.workouts)) {
         workouts = workoutsData.workouts;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts));
+        localStorage.setItem(userStorageKey(STORAGE_KEY), JSON.stringify(workouts));
       }
     }
 
@@ -69,7 +83,7 @@ async function loadData() {
       const plansData = await plansResponse.json();
       if (Array.isArray(plansData.plans)) {
         plans = plansData.plans;
-        localStorage.setItem(PLAN_KEY, JSON.stringify(plans));
+        localStorage.setItem(userStorageKey(PLAN_KEY), JSON.stringify(plans));
       }
     }
   } catch (error) {
@@ -253,7 +267,7 @@ function handlePlanSubmit(event) {
   }
   plans = plans.filter((item) => item.id !== plan.id);
   plans.unshift(plan);
-  localStorage.setItem(PLAN_KEY, JSON.stringify(plans));
+  localStorage.setItem(userStorageKey(PLAN_KEY), JSON.stringify(plans));
   fetch('/api/workouts/plans', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -266,7 +280,7 @@ function handlePlanSubmit(event) {
 function deleteCurrentPlan() {
   if (!editingPlanId) return;
   plans = plans.filter((plan) => plan.id !== editingPlanId);
-  localStorage.setItem(PLAN_KEY, JSON.stringify(plans));
+  localStorage.setItem(userStorageKey(PLAN_KEY), JSON.stringify(plans));
   fetch('/api/workouts/plans', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

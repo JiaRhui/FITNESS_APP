@@ -1,4 +1,17 @@
 const HABIT_STORAGE_KEY = 'daily-habit-checklist';
+let currentUserEmail = '';
+
+function userHabitStorageKey() { return `${HABIT_STORAGE_KEY}:${currentUserEmail}`; }
+
+async function loadCurrentUser() {
+  const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
+  const data = await response.json();
+  if (!response.ok || !data.loggedIn || !data.email || data.email === 'admin') {
+    window.location.href = '/pages/login.html';
+    throw new Error('Login required');
+  }
+  currentUserEmail = String(data.email).trim().toLowerCase();
+}
 const HABIT_DEFINITIONS = [
   { key: 'calorieGoal', label: 'Calorie Goal', icon: '🎯', description: 'Met your daily calorie goal' },
   { key: 'fitnessWorkout', label: 'Fitness Workout', icon: '💪', description: 'Completed a workout' }
@@ -43,7 +56,7 @@ function createEmptyMonthState(monthKey) {
 
 function loadHabitState() {
   try {
-    const storedState = window.localStorage.getItem(HABIT_STORAGE_KEY);
+    const storedState = window.localStorage.getItem(userHabitStorageKey());
     if (!storedState) return createEmptyMonthState(getMonthKey());
 
     const parsedState = JSON.parse(storedState);
@@ -78,7 +91,7 @@ function loadHabitState() {
 }
 
 function saveHabitState(state) {
-  window.localStorage.setItem(HABIT_STORAGE_KEY, JSON.stringify(state));
+  window.localStorage.setItem(userHabitStorageKey(), JSON.stringify(state));
 }
 
 function calculateHabitProgress(dayEntries, todayDateLabel = getDateLabel()) {
@@ -233,7 +246,10 @@ function initHabitTracker() {
 }
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('load', initHabitTracker);
+  window.addEventListener('load', async () => {
+    await loadCurrentUser();
+    initHabitTracker();
+  });
 }
 
 if (typeof module !== 'undefined' && module.exports) {

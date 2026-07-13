@@ -14,12 +14,26 @@ const SPORTS = [
 ];
 
 const STORAGE_KEY = 'rpFitness_workouts';
+let currentUserEmail = '';
+
+function userStorageKey(baseKey) { return `${baseKey}:${currentUserEmail}`; }
+
+async function loadCurrentUser() {
+  const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
+  const data = await response.json();
+  if (!response.ok || !data.loggedIn || !data.email || data.email === 'admin') {
+    window.location.href = '/pages/login.html';
+    throw new Error('Login required');
+  }
+  currentUserEmail = String(data.email).trim().toLowerCase();
+}
 const MAX_HISTORY = 10;
 let workouts = [];
 let selectedSport = 'Gym';
 let editingId = null;
 
-function init() {
+async function init() {
+  await loadCurrentUser();
   renderSportGrid();
   setDefaultDateTime();
   bindEvents();
@@ -440,20 +454,20 @@ function collectWorkoutData() {
 function saveWorkoutToStorage(workout) {
   const nextWorkouts = [workout, ...workouts.filter((item) => item.id !== workout.id)].sort((a, b) => new Date(b.date) - new Date(a.date));
   workouts = nextWorkouts;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts));
+  localStorage.setItem(userStorageKey(STORAGE_KEY), JSON.stringify(workouts));
   fetch('/api/workouts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(workout) }).catch(() => {});
 }
 
 async function loadWorkouts() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(userStorageKey(STORAGE_KEY));
     if (saved) {
       workouts = JSON.parse(saved);
     } else {
       const response = await fetch('/api/workouts');
       const data = await response.json();
       workouts = data.workouts || [];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts));
+      localStorage.setItem(userStorageKey(STORAGE_KEY), JSON.stringify(workouts));
     }
     renderHistory();
     renderSportSpecificFields();
@@ -546,7 +560,7 @@ function handleSubmit(event) {
     data.id = `workout-${Date.now()}`;
     workouts = [data, ...workouts];
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts));
+  localStorage.setItem(userStorageKey(STORAGE_KEY), JSON.stringify(workouts));
   fetch('/api/workouts', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workouts }) }).catch(() => {});
   renderHistory();
   showToast('Workout saved! Keep it up 💪');
@@ -591,7 +605,7 @@ function editWorkout(id) {
 
 function deleteWorkout(id) {
   workouts = workouts.filter((item) => item.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts));
+  localStorage.setItem(userStorageKey(STORAGE_KEY), JSON.stringify(workouts));
   fetch('/api/workouts', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workouts }) }).catch(() => {});
   renderHistory();
 }
