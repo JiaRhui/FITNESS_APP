@@ -12,6 +12,7 @@ const { requireSession, requireAdmin } = require('./middleware/helpers');
 const dailyChecklistRoutes = require('./routes/dailyChecklistRoutes');
 const workoutRoutes = require('./routes/workoutRoutes');
 const nutritionRoutes = require('./routes/nutritionRoutes');
+const calorieTrackerRoutes = require('./routes/calorieTrackerRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,6 +38,7 @@ app.use('/api/facilities', facilitiesRoutes);
 app.use('/api/daily-checklist', dailyChecklistRoutes);
 app.use('/api/workouts', workoutRoutes);
 app.use('/api/nutrition', nutritionRoutes);
+app.use('/api/calorie-tracker', calorieTrackerRoutes);
 
 // =========================
 // Legacy API Endpoints
