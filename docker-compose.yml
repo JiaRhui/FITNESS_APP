@@ -1,11 +1,45 @@
 services:
+
+  # ---------------------------------------------------------------
+  # NEW: PostgreSQL. The healthcheck is what lets the backend wait
+  # for a database that is actually ready, not just a running container.
+  # ---------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: fitness-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-fitness}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set - see .env.example}
+      POSTGRES_DB: ${DB_NAME:-fitness}
+    ports:
+      - "5432:5432"
+    volumes:
+      # Named volume: data survives `docker compose down`.
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-fitness} -d ${DB_NAME:-fitness}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
   backend:
     build: ./backend
     container_name: fitness-backend
     ports:
       - "3001:3000"
-    volumes:
-      - ./backend/data:/app/data
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-fitness}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set - see .env.example}
+      DB_NAME: ${DB_NAME:-fitness}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET must be set}
+    depends_on:
+      db:
+        # Waits for the healthcheck to pass, not just for the container to start.
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
@@ -16,3 +50,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  db_data:
