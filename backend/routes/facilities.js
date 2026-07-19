@@ -4,7 +4,7 @@ const path = require('path');
 
 const router = express.Router();
 const facilitiesPath = path.join(__dirname, '..', 'data', 'facilities.json');
-
+const { findCuratedFacilities } = require('../models/facilityModel');
 function readFacilities() {
   const raw = fs.readFileSync(facilitiesPath, 'utf8');
   return JSON.parse(raw);
@@ -119,10 +119,7 @@ router.get('/', async (req, res) => {
   const radiusKm = parseFloat(req.query.radius || '10');
   const limit = parseInt(req.query.limit || '20', 10);
 
-  const staticFacilities = readFacilities().filter((facility) => facility.public === true);
-  const filteredStatic = typeFilter === 'both'
-    ? staticFacilities
-    : staticFacilities.filter((facility) => facility.type === typeFilter);
+  const filteredStatic = await findCuratedFacilities(typeFilter);
 
   let facilities = [];
 
