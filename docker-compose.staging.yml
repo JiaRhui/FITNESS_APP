@@ -2,6 +2,26 @@ version: "3.9"
 
 services:
 
+  mysql:
+    image: mysql:8.0
+    container_name: fitness-mysql-staging
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fitness_app}
+      MYSQL_USER: ${MYSQL_USER:-fitness}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_staging_data:/var/lib/mysql
+      - ./backend/models/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -10,6 +30,18 @@ services:
 
     ports:
       - "4001:3000"
+
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fitness_app}
+      MYSQL_USER: ${MYSQL_USER:-fitness}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      SESSION_SECRET: ${SESSION_SECRET:-rp-fitness-staging-secret}
+
+    depends_on:
+      mysql:
+        condition: service_healthy
 
     volumes:
       - ./backend/data:/app/data
@@ -29,3 +61,6 @@ services:
       - backend
 
     restart: unless-stopped
+
+volumes:
+  mysql_staging_data:

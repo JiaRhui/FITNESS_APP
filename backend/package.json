@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "rp-fitness-backend",
   "version": "1.0.0",
   "description": "Express backend for the RP Fitness full-stack DevOps project.",
@@ -7,11 +7,14 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node --check server.js"
+    "test": "node --check server.js",
+    "migrate:users": "node scripts/migrate-json-to-mysql.js"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "express-session": "^1.19.0"
+    "express-session": "^1.19.0",
+    "mysql2": "^3.11.0"
   }
 }

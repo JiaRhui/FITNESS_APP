@@ -18,17 +18,21 @@
 
     - name: Wait for production services to start
       pause:
-        seconds: 10
+        seconds: 15
 
     - name: Verify production backend health
+      # Retries generously: on the very first deploy MySQL has to initialize
+      # its data directory and run schema.sql, which can take 30-60s. The
+      # backend waits for MySQL before listening, so /health won't answer
+      # until the database is genuinely ready.
       uri:
         url: "http://host.docker.internal:3001/health"
         method: GET
         status_code: 200
         return_content: true
       register: backend_health
-      retries: 5
-      delay: 5
+      retries: 12
+      delay: 10
       until: backend_health.status == 200
 
     - name: Verify production frontend login page

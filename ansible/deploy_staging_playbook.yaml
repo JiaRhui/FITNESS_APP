@@ -24,12 +24,16 @@
       args:
         chdir: "{{ playbook_dir }}/.."
 
-    - name: Wait for backend
+    - name: Wait for containers to initialize
 
       pause:
-        seconds: 10
+        seconds: 15
 
     - name: Verify backend
+      # Retries generously: on the very first deploy MySQL has to initialize
+      # its data directory and run schema.sql, which can take 30-60s. The
+      # backend waits for MySQL before listening, so /health won't answer
+      # until the database is genuinely ready.
 
       uri:
 
@@ -38,6 +42,14 @@
         method: GET
 
         status_code: 200
+
+      register: staging_backend_health
+
+      retries: 12
+
+      delay: 10
+
+      until: staging_backend_health.status == 200
 
     - name: Verify frontend
 
@@ -48,6 +60,14 @@
         method: GET
 
         status_code: 200
+
+      register: staging_frontend_health
+
+      retries: 5
+
+      delay: 5
+
+      until: staging_frontend_health.status == 200
 
     - name: Display URLs
 

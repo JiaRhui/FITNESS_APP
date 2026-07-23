@@ -1,51 +1,57 @@
-﻿const { readUsers, saveUsers, sanitizeUser } = require('../models/userModel');
-const { getToday, isValidRpEmail, normalizeEmail } = require('../middleware/helpers');
+const {
+  findUserByEmail,
+  createUser,
+  verifyPassword,
+  touchLastLogin,
+  sanitizeUser,
+} = require('../models/userModel');
+const { isValidRpEmail, normalizeEmail } = require('../middleware/helpers');
 
-function signup(req, res) {
-  const email = normalizeEmail(req.body.email);
-  const password = String(req.body.password || '').trim();
-  if (!email || !password) return res.status(400).json({ success: false, message: 'Email and password are required' });
-  if (!isValidRpEmail(email)) return res.status(400).json({ success: false, message: 'Email must be 8 digits @myrp.edu.sg' });
-  if (password.length < 6) return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+async function signup(req, res) {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const password = String(req.body.password || '').trim();
+    if (!email || !password) return res.status(400).json({ success: false, message: 'Email and password are required' });
+    if (!isValidRpEmail(email)) return res.status(400).json({ success: false, message: 'Email must be 8 digits @myrp.edu.sg' });
+    if (password.length < 6) return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
 
-  const users = readUsers();
-  if (users.some((user) => normalizeEmail(user.email) === email)) {
-    return res.status(409).json({ success: false, message: 'User already exists' });
+    const existing = await findUserByEmail(email);
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'User already exists' });
+    }
+
+    await createUser(email, password);
+    return res.status(201).json({ success: true, message: 'Account created successfully' });
+  } catch (err) {
+    console.error('signup error:', err);
+    return res.status(500).json({ success: false, message: 'Server error during signup' });
   }
-
-  users.push({
-    email,
-    password,
-    createdAt: new Date().toLocaleString(),
-    lastLogin: 'Never',
-    profile: null,
-    calories: { date: getToday(), foods: [] }
-  });
-  saveUsers(users);
-  return res.status(201).json({ success: true, message: 'Account created successfully' });
 }
 
-function login(req, res) {
-  const email = normalizeEmail(req.body.email);
-  const password = String(req.body.password || '');
-  if (!email || !password) return res.status(400).json({ success: false, message: 'Email and password are required' });
+async function login(req, res) {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const password = String(req.body.password || '');
+    if (!email || !password) return res.status(400).json({ success: false, message: 'Email and password are required' });
 
-  if (email === 'admin' && password === 'admin') {
-    req.session.user = 'admin';
-    req.session.role = 'admin';
-    return res.json({ success: true, user: { email: 'admin', role: 'admin' } });
+    if (email === 'admin' && password === 'admin') {
+      req.session.user = 'admin';
+      req.session.role = 'admin';
+      return res.json({ success: true, user: { email: 'admin', role: 'admin' } });
+    }
+
+    const user = await findUserByEmail(email);
+    if (!user || !(await verifyPassword(user, password))) {
+      return res.status(401).json({ success: false, message: 'Invalid login' });
+    }
+
+    await touchLastLogin(user.id);
+    req.session.user = user.email;
+    return res.json({ success: true, user: sanitizeUser(user) });
+  } catch (err) {
+    console.error('login error:', err);
+    return res.status(500).json({ success: false, message: 'Server error during login' });
   }
-
-  const users = readUsers();
-  const user = users.find((item) => normalizeEmail(item.email) === email && item.password === password);
-  if (!user) return res.status(401).json({ success: false, message: 'Invalid login' });
-
-  req.session.user = user.email;
-  user.lastLogin = new Date().toLocaleString();
-  user.calories = user.calories || { date: getToday(), foods: [] };
-  user.calories.foods = Array.isArray(user.calories.foods) ? user.calories.foods : [];
-  saveUsers(users);
-  return res.json({ success: true, user: sanitizeUser(user) });
 }
 
 function checkSession(req, res) {

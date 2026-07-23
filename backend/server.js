@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
 
+const { verifyConnection } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -79,7 +80,16 @@ app.use((err, req, res, next) => {
 
 // =========================
 // Start Server
+// (waits for MySQL to be reachable first, since the DB container
+// may still be initializing when this container starts)
 // =========================
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`RP Fitness backend running at http://0.0.0.0:${PORT}`);
-});
+verifyConnection()
+  .then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`RP Fitness backend running at http://0.0.0.0:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Fatal: could not start server —', err.message);
+    process.exit(1);
+  });

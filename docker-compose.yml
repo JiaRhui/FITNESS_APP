@@ -1,9 +1,39 @@
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: fitness-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fitness_app}
+      MYSQL_USER: ${MYSQL_USER:-fitness}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/models/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: ./backend
     container_name: fitness-backend
     ports:
       - "3001:3000"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fitness_app}
+      MYSQL_USER: ${MYSQL_USER:-fitness}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      SESSION_SECRET: ${SESSION_SECRET:-rp-fitness-dev-secret}
+    depends_on:
+      mysql:
+        condition: service_healthy
     volumes:
       - ./backend/data:/app/data
     restart: unless-stopped
@@ -16,3 +46,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  mysql_data:
