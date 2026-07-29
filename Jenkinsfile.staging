@@ -20,29 +20,38 @@ pipeline {
                     echo "Running JavaScript lint checks..."
 
                     docker run --rm \
-                        -v "$WORKSPACE:/workspace:ro" \
-                        -w /workspace \
+                        --volumes-from "$(hostname)" \
+                        -w "$WORKSPACE" \
                         node:20-alpine sh -c '
+                            echo "Current directory:"
+                            pwd
+
+                            echo "Repository contents:"
+                            ls -la
+
+                            test -d backend
+                            test -d frontend/src
+
                             npx --yes eslint@8.57.1 \
-                            backend frontend/src \
-                            --ext .js \
-                            --no-eslintrc \
-                            --env es2021 \
-                            --env node \
-                            --env browser \
-                            --global fetch:readonly \
-                            --global Chart:readonly \
-                            --rule "no-undef:warn" \
-                            --rule "no-redeclare:error" \
-                            --rule "no-unreachable:error" \
-                            --rule "no-unused-vars:warn"
+                                backend frontend/src \
+                                --ext .js \
+                                --no-eslintrc \
+                                --env es2021 \
+                                --env node \
+                                --env browser \
+                                --global fetch:readonly \
+                                --global Chart:readonly \
+                                --rule "no-undef:warn" \
+                                --rule "no-redeclare:error" \
+                                --rule "no-unreachable:error" \
+                                --rule "no-unused-vars:warn"
                         '
 
                     echo "Lint test passed."
                 '''
             }
         }
-
+        
         stage('SonarQube Analysis') {
             steps {
                 script {
