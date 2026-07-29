@@ -14,34 +14,39 @@ pipeline {
             }
         }
 
-        stage('Lint Test') {
+        stage('Hadolint') {
             steps {
                 sh '''
-                echo "Running JavaScript lint checks..."
+                    set -eu
 
-                docker run --rm \
-                -v "$WORKSPACE:/workspace:ro" \
-                -w /workspace \
-                node:20-alpine sh -c '
-                    npx --yes eslint@8.57.1 \
-                    backend frontend/src \
-                    --ext .js \
-                    --no-eslintrc \
-                    --env es2021 \
-                    --env node \
-                    --env browser \
-                    --global fetch:readonly \
-                    --global Chart:readonly \
-                    --rule "no-undef:warn" \
-                    --rule "no-redeclare:error" \
-                    --rule "no-unreachable:error" \
-                    --rule "no-unused-vars:warn"
-                '
+                    echo "================================"
+                    echo "Running Hadolint Dockerfile tests"
+                    echo "================================"
 
-                echo "Lint test passed."
-            '''
+                    for dockerfile in \
+                        Dockerfile.jenkins \
+                        backend/Dockerfile \
+                        frontend/Dockerfile
+                    do
+                        echo "Checking: $dockerfile"
+
+                        test -f "$dockerfile"
+
+                        docker run --rm -i \
+                            hadolint/hadolint:v2.14.0 \
+                            hadolint \
+                            --failure-threshold error \
+                            - < "$dockerfile"
+
+                        echo "PASS: $dockerfile"
+                    done
+
+                    echo "================================"
+                    echo "ALL HADOLINT TESTS PASSED"
+                    echo "================================"
+                '''
+            }
         }
-    }
 
         stage('SonarQube Analysis') {
             steps {
