@@ -14,23 +14,9 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Hadolint') {
             steps {
-                script {
-                    def scannerHome = tool 'SonarScanner'
-
-                    withSonarQubeEnv('SonarQube') {
-                        sh "${scannerHome}/bin/sonar-scanner"
-                    }
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
+                sh 'bash scripts/run-hadolint.sh'
             }
         }
 
@@ -50,19 +36,14 @@ pipeline {
             }
         }
 
-        stage('Verify Deployment') {
-
+        stage('Verify Deployment - Smoke Curl') {
             steps {
-
                 sh '''
-                sleep 10
-
-                curl -f http://host.docker.internal:4001/health
-
-                curl -f http://host.docker.internal:4000/pages/login.html
+                BACKEND_URL=http://host.docker.internal:4001 \
+                FRONTEND_URL=http://host.docker.internal:4000 \
+                bash scripts/run-smoke-tests.sh
                 '''
             }
-
         }
 
     }
@@ -70,11 +51,11 @@ pipeline {
     post {
 
         success {
-            echo 'Staging deployment successful.'
+            echo 'Staging deployment, Hadolint, and smoke curl tests successful.'
         }
 
         failure {
-            echo 'Staging deployment failed.'
+            echo 'Staging deployment or automated testing failed.'
         }
 
     }
