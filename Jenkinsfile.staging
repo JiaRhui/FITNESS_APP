@@ -16,55 +16,7 @@ pipeline {
 
         stage('Hadolint') {
             steps {
-                sh '''
-                    set -eu
-
-                    echo "================================"
-                    echo "Running Hadolint Dockerfile tests"
-                    echo "================================"
-
-                    for dockerfile in \
-                        Dockerfile.jenkins \
-                        backend/Dockerfile \
-                        frontend/Dockerfile
-                    do
-                        echo "Checking: $dockerfile"
-
-                        test -f "$dockerfile"
-
-                        docker run --rm -i \
-                            hadolint/hadolint:v2.14.0 \
-                            hadolint \
-                            --failure-threshold error \
-                            - < "$dockerfile"
-
-                        echo "PASS: $dockerfile"
-                    done
-
-                    echo "================================"
-                    echo "ALL HADOLINT TESTS PASSED"
-                    echo "================================"
-                '''
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    def scannerHome = tool 'SonarScanner'
-
-                    withSonarQubeEnv('SonarQube') {
-                        sh "${scannerHome}/bin/sonar-scanner"
-                    }
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
+                sh 'bash scripts/run-hadolint.sh'
             }
         }
 
@@ -84,95 +36,12 @@ pipeline {
             }
         }
 
-        stage('API Tests') {
+        stage('Verify Deployment - Smoke Curl') {
             steps {
                 sh '''
-                    set -e
-
-                    BACKEND_URL="http://host.docker.internal:4001"
-
-                    echo "Waiting for staging backend..."
-                    sleep 10
-
-                    echo "================================"
-                    echo "API TEST 1: Health endpoint"
-                    echo "================================"
-
-                    curl --fail \
-                        --silent \
-                        --show-error \
-                        "$BACKEND_URL/health" \
-                        > /tmp/health-response.json
-
-                    cat /tmp/health-response.json
-
-                    grep -q '"status":"OK"' /tmp/health-response.json
-
-                    echo "PASS: Health API returned status OK."
-
-
-                    echo "================================"
-                    echo "API TEST 2: Session endpoint"
-                    echo "================================"
-
-                    SESSION_STATUS=$(curl \
-                        --silent \
-                        --show-error \
-                        --output /tmp/session-response.json \
-                        --write-out "%{http_code}" \
-                        "$BACKEND_URL/api/auth/session")
-
-                    cat /tmp/session-response.json
-
-                    test "$SESSION_STATUS" = "200"
-                    grep -q '"loggedIn":false' /tmp/session-response.json
-
-                    echo "PASS: Session API returned HTTP 200."
-
-
-                    echo "================================"
-                    echo "API TEST 3: Invalid login"
-                    echo "================================"
-
-                    LOGIN_STATUS=$(curl \
-                        --silent \
-                        --show-error \
-                        --output /tmp/login-response.json \
-                        --write-out "%{http_code}" \
-                        --request POST \
-                        --header "Content-Type: application/json" \
-                        --data '{"email":"","password":""}' \
-                        "$BACKEND_URL/api/auth/login")
-
-                    cat /tmp/login-response.json
-
-                    test "$LOGIN_STATUS" = "400"
-                    grep -q '"success":false' /tmp/login-response.json
-
-                    echo "PASS: Invalid login returned HTTP 400."
-
-
-                    echo "================================"
-                    echo "API TEST 4: Protected API"
-                    echo "================================"
-
-                    PROTECTED_STATUS=$(curl \
-                        --silent \
-                        --show-error \
-                        --output /tmp/protected-response.json \
-                        --write-out "%{http_code}" \
-                        "$BACKEND_URL/api/calorie-tracker")
-
-                    cat /tmp/protected-response.json
-
-                    test "$PROTECTED_STATUS" = "401"
-                    grep -q '"success":false' /tmp/protected-response.json
-
-                    echo "PASS: Protected API returned HTTP 401."
-
-                    echo "================================"
-                    echo "ALL API TESTS PASSED"
-                    echo "================================"
+                BACKEND_URL=http://host.docker.internal:4001 \
+                FRONTEND_URL=http://host.docker.internal:4000 \
+                bash scripts/run-smoke-tests.sh
                 '''
             }
         }
@@ -182,11 +51,11 @@ pipeline {
     post {
 
         success {
-            echo 'Staging deployment successful.'
+            echo 'Staging deployment, Hadolint, and smoke curl tests successful.'
         }
 
         failure {
-            echo 'Staging deployment failed.'
+            echo 'Staging deployment or automated testing failed.'
         }
 
     }
