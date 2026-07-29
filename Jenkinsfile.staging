@@ -14,6 +14,7 @@ pipeline {
             }
         }
 
+<<<<<<< HEAD
         stage('Lint Test') {
             steps {
                 sh '''
@@ -45,6 +46,10 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
+=======
+        stage('SonarQube Analysis') {
+            steps {
+>>>>>>> origin/staging
                 script {
                     def scannerHome = tool 'SonarScanner'
 
@@ -79,9 +84,16 @@ pipeline {
             }
         }
 
+<<<<<<< HEAD
         stage('API Tests') {
+=======
+        stage('Verify Deployment') {
+
+>>>>>>> origin/staging
             steps {
+
                 sh '''
+<<<<<<< HEAD
                     set -e
 
                     BACKEND_URL="http://host.docker.internal:4001"
@@ -168,8 +180,16 @@ pipeline {
                     echo "================================"
                     echo "ALL API TESTS PASSED"
                     echo "================================"
+=======
+                sleep 10
+
+                curl -f http://host.docker.internal:4001/health
+
+                curl -f http://host.docker.internal:4000/pages/login.html
+>>>>>>> origin/staging
                 '''
             }
+
         }
 
     }
