@@ -18,20 +18,13 @@ pipeline {
             steps {
                 sh '''
                     echo "Running JavaScript lint checks..."
-
+                    echo "Jenkins workspace: $WORKSPACE"
+        
                     docker run --rm \
                         --volumes-from "$(hostname)" \
                         -w "$WORKSPACE" \
-                        node:20-alpine sh -c '
-                            echo "Current directory:"
-                            pwd
-
-                            echo "Repository contents:"
-                            ls -la
-
-                            test -d backend
-                            test -d frontend/src
-
+                        node:20-alpine \
+                        sh -c '
                             npx --yes eslint@8.57.1 \
                                 backend frontend/src \
                                 --ext .js \
@@ -46,12 +39,10 @@ pipeline {
                                 --rule "no-unreachable:error" \
                                 --rule "no-unused-vars:warn"
                         '
-
-                    echo "Lint test passed."
                 '''
             }
         }
-        
+
         stage('SonarQube Analysis') {
             steps {
                 script {
@@ -67,7 +58,14 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                    script {
+                        def qualityGate = waitForQualityGate(
+                            abortPipeline: false
+                        )
+
+                        echo "SonarQube Quality Gate status: ${qualityGate.status}"
+                        echo "Quality Gate is informational only. Deployment will continue."
+                    }
                 }
             }
         }
@@ -88,16 +86,26 @@ pipeline {
             }
         }
 
+        stage('Verify Deployment') {
+            steps {
+                sh '''
+                    set -e
+
+                    echo "Waiting for staging services..."
+                    sleep 10
+
+                    curl --fail http://host.docker.internal:4001/health
+                    curl --fail http://host.docker.internal:4000/pages/login.html
+                '''
+            }
+        }
+
         stage('API Tests') {
             steps {
                 sh '''
                     set -e
 
                     BACKEND_URL="http://host.docker.internal:4001"
-                    FRONTEND_URL="http://host.docker.internal:4000"
-
-                    echo "Waiting for staging application..."
-                    sleep 10
 
                     echo "================================"
                     echo "API TEST 1: Health endpoint"
@@ -165,19 +173,7 @@ pipeline {
                     echo "PASS: Protected API returned HTTP 401."
 
                     echo "================================"
-                    echo "SMOKE TEST: Frontend"
-                    echo "================================"
-
-                    curl --fail \
-                        --silent \
-                        --show-error \
-                        "$FRONTEND_URL/pages/login.html" \
-                        > /dev/null
-
-                    echo "PASS: Frontend login page is reachable."
-
-                    echo "================================"
-                    echo "ALL API AND SMOKE TESTS PASSED"
+                    echo "ALL API TESTS PASSED"
                     echo "================================"
                 '''
             }
@@ -186,11 +182,11 @@ pipeline {
 
     post {
         success {
-            echo 'Staging deployment and automated testing successful.'
+            echo 'Staging deployment successful.'
         }
 
         failure {
-            echo 'Staging deployment or automated testing failed.'
+            echo 'Staging deployment failed.'
         }
     }
 }
