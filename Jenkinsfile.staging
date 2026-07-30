@@ -14,42 +14,37 @@ pipeline {
             }
         }
 
-<<<<<<< HEAD
         stage('Lint Test') {
             steps {
                 sh '''
-                echo "Running JavaScript lint checks..."
+                    echo "Running JavaScript lint checks..."
 
-                docker run --rm \
-                -v "$WORKSPACE:/workspace:ro" \
-                -w /workspace \
-                node:20-alpine sh -c '
-                    npx --yes eslint@8.57.1 \
-                    backend frontend/src \
-                    --ext .js \
-                    --no-eslintrc \
-                    --env es2021 \
-                    --env node \
-                    --env browser \
-                    --global fetch:readonly \
-                    --global Chart:readonly \
-                    --rule "no-undef:warn" \
-                    --rule "no-redeclare:error" \
-                    --rule "no-unreachable:error" \
-                    --rule "no-unused-vars:warn"
-                '
+                    docker run --rm \
+                        -v "$WORKSPACE:/workspace:ro" \
+                        -w /workspace \
+                        node:20-alpine sh -c '
+                            npx --yes eslint@8.57.1 \
+                                backend frontend/src \
+                                --ext .js \
+                                --no-eslintrc \
+                                --env es2021 \
+                                --env node \
+                                --env browser \
+                                --global fetch:readonly \
+                                --global Chart:readonly \
+                                --rule "no-undef:warn" \
+                                --rule "no-redeclare:error" \
+                                --rule "no-unreachable:error" \
+                                --rule "no-unused-vars:warn"
+                        '
 
-                echo "Lint test passed."
-            '''
+                    echo "Lint test passed."
+                '''
+            }
         }
-    }
 
         stage('SonarQube Analysis') {
             steps {
-=======
-        stage('SonarQube Analysis') {
-            steps {
->>>>>>> origin/staging
                 script {
                     def scannerHome = tool 'SonarScanner'
 
@@ -77,29 +72,33 @@ pipeline {
         stage('Deploy Staging') {
             steps {
                 sh '''
-                ansible-playbook \
-                -i ansible/hosts \
-                ansible/deploy_staging_playbook.yaml
+                    ansible-playbook \
+                        -i ansible/hosts \
+                        ansible/deploy_staging_playbook.yaml
                 '''
             }
         }
 
-<<<<<<< HEAD
-        stage('API Tests') {
-=======
         stage('Verify Deployment') {
-
->>>>>>> origin/staging
             steps {
-
                 sh '''
-<<<<<<< HEAD
+                    set -e
+
+                    echo "Waiting for staging services..."
+                    sleep 10
+
+                    curl --fail http://host.docker.internal:4001/health
+                    curl --fail http://host.docker.internal:4000/pages/login.html
+                '''
+            }
+        }
+
+        stage('API Tests') {
+            steps {
+                sh '''
                     set -e
 
                     BACKEND_URL="http://host.docker.internal:4001"
-
-                    echo "Waiting for staging backend..."
-                    sleep 10
 
                     echo "================================"
                     echo "API TEST 1: Health endpoint"
@@ -112,11 +111,8 @@ pipeline {
                         > /tmp/health-response.json
 
                     cat /tmp/health-response.json
-
                     grep -q '"status":"OK"' /tmp/health-response.json
-
                     echo "PASS: Health API returned status OK."
-
 
                     echo "================================"
                     echo "API TEST 2: Session endpoint"
@@ -130,12 +126,9 @@ pipeline {
                         "$BACKEND_URL/api/auth/session")
 
                     cat /tmp/session-response.json
-
                     test "$SESSION_STATUS" = "200"
                     grep -q '"loggedIn":false' /tmp/session-response.json
-
                     echo "PASS: Session API returned HTTP 200."
-
 
                     echo "================================"
                     echo "API TEST 3: Invalid login"
@@ -152,12 +145,9 @@ pipeline {
                         "$BACKEND_URL/api/auth/login")
 
                     cat /tmp/login-response.json
-
                     test "$LOGIN_STATUS" = "400"
                     grep -q '"success":false' /tmp/login-response.json
-
                     echo "PASS: Invalid login returned HTTP 400."
-
 
                     echo "================================"
                     echo "API TEST 4: Protected API"
@@ -171,31 +161,19 @@ pipeline {
                         "$BACKEND_URL/api/calorie-tracker")
 
                     cat /tmp/protected-response.json
-
                     test "$PROTECTED_STATUS" = "401"
                     grep -q '"success":false' /tmp/protected-response.json
-
                     echo "PASS: Protected API returned HTTP 401."
 
                     echo "================================"
                     echo "ALL API TESTS PASSED"
                     echo "================================"
-=======
-                sleep 10
-
-                curl -f http://host.docker.internal:4001/health
-
-                curl -f http://host.docker.internal:4000/pages/login.html
->>>>>>> origin/staging
                 '''
             }
-
         }
-
     }
 
     post {
-
         success {
             echo 'Staging deployment successful.'
         }
@@ -203,7 +181,5 @@ pipeline {
         failure {
             echo 'Staging deployment failed.'
         }
-
     }
-
 }
