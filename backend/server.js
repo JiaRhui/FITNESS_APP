@@ -2,11 +2,6 @@ const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
 
-// ← ADD THESE 3 LINES
-const client = require('prom-client');
-const collectDefaultMetrics = client.collectDefaultMetrics;
-collectDefaultMetrics({ timeout: 5000 });
-
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -62,20 +57,6 @@ app.post('/user-overview', requireSession, requireAdmin, adminController.userOve
 // =========================
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', service: 'fitness-backend' });
-});
-
-// ← ADD THESE LINES
-// =========================
-// Prometheus Metrics
-// =========================
-app.get('/metrics', async (req, res) => {
-  try {
-    res.set('Content-Type', client.register.contentType);
-    const metrics = await client.register.metrics();
-    res.end(metrics);
-  } catch (err) {
-    res.status(500).end(err);
-  }
 });
 
 // =========================
