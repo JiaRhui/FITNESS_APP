@@ -64,6 +64,10 @@ services:
     restart: unless-stopped
 
 # ← ADD THIS ENTIRE SECTION
+networks:
+  fitness-network:
+    driver: bridge
+
 volumes:
   grafana-storage:
   prometheus-storage:
