@@ -1,0 +1,10 @@
+# .trivyignore
+#
+# List CVE IDs here (one per line) to suppress them in Trivy scans.
+# Use for vulnerabilities that are known, accepted, or have no available fix,
+# so they don't drown out new actionable findings once a failing gate is on.
+#
+# Example:
+# CVE-2023-12345
+#
+# Leave empty to start.

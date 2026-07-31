@@ -24,6 +24,58 @@ pipeline {
             }
         }
 
+        stage('Security Scan (Trivy)') {
+            // Scans the freshly built images for known HIGH/CRITICAL
+            // vulnerabilities BEFORE they are pushed to Docker Hub. Runs Trivy
+            // as a container so nothing needs installing on the Jenkins agent;
+            // the vulnerability DB is cached in the workspace for speed.
+            //
+            // --exit-code 0 => report only, never fail the build. Base images
+            // always carry some unfixable CVEs. --ignore-unfixed hides vulns
+            // with no available fix, so the report shows only actionable items.
+            // To turn this into a real gate later, change --exit-code 0 to 1.
+            steps {
+                sh '''
+                    mkdir -p trivy-reports .trivy-cache
+
+                    for target in "${LOCAL_BACKEND_IMAGE}:latest" "${LOCAL_FRONTEND_IMAGE}:latest"; do
+                        safe_name=$(echo "${target}" | tr '/:' '__')
+                        echo "=== Scanning ${target} ==="
+
+                        docker run --rm \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -v "${WORKSPACE}/.trivy-cache:/root/.cache/trivy" \
+                            -v "${WORKSPACE}/trivy-reports:/reports" \
+                            aquasec/trivy:latest image \
+                            --scanners vuln \
+                            --severity HIGH,CRITICAL \
+                            --ignore-unfixed \
+                            --exit-code 0 \
+                            --no-progress \
+                            --format table \
+                            --output "/reports/${safe_name}.txt" \
+                            "${target}"
+
+                        docker run --rm \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -v "${WORKSPACE}/.trivy-cache:/root/.cache/trivy" \
+                            aquasec/trivy:latest image \
+                            --scanners vuln \
+                            --severity HIGH,CRITICAL \
+                            --ignore-unfixed \
+                            --exit-code 0 \
+                            --no-progress \
+                            "${target}"
+                    done
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'trivy-reports/*.txt', allowEmptyArchive: true
+                }
+            }
+        }
+
         stage('Tag Docker Images') {
             steps {
                 sh '''
