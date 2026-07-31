@@ -17,28 +17,28 @@ pipeline {
         stage('Lint Test') {
             steps {
                 sh '''
-                    echo "Running JavaScript lint checks..."
-                    echo "Jenkins workspace: $WORKSPACE"
-        
-                    docker run --rm \
-                        --volumes-from "$(hostname)" \
-                        -w "$WORKSPACE" \
-                        node:20-alpine \
-                        sh -c '
-                            npx --yes eslint@8.57.1 \
-                                backend frontend/src \
-                                --ext .js \
-                                --no-eslintrc \
-                                --env es2021 \
-                                --env node \
-                                --env browser \
-                                --global fetch:readonly \
-                                --global Chart:readonly \
-                                --rule "no-undef:warn" \
-                                --rule "no-redeclare:error" \
-                                --rule "no-unreachable:error" \
-                                --rule "no-unused-vars:warn"
-                        '
+                echo "Running JavaScript lint checks..."
+
+                docker run --rm \
+                -v "$WORKSPACE:/workspace:ro" \
+                -w /workspace \
+                node:20-alpine sh -c '
+                    npx --yes eslint@8.57.1 \
+                    backend frontend/src \
+                    --ext .js \
+                    --no-eslintrc \
+                    --env es2021 \
+                    --env node \
+                    --env browser \
+                    --global fetch:readonly \
+                    --global Chart:readonly \
+                    --rule "no-undef:warn" \
+                    --rule "no-redeclare:error" \
+                    --rule "no-unreachable:error" \
+                    --rule "no-unused-vars:warn"
+                '
+
+                echo "Lint test passed."
                 '''
             }
         }
@@ -58,14 +58,7 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
-                    script {
-                        def qualityGate = waitForQualityGate(
-                            abortPipeline: false
-                        )
-
-                        echo "SonarQube Quality Gate status: ${qualityGate.status}"
-                        echo "Quality Gate is informational only. Deployment will continue."
-                    }
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -76,26 +69,64 @@ pipeline {
             }
         }
 
-        stage('Deploy Staging') {
+        stage('Security Scan (Trivy)') {
+            // Scans the freshly built staging images for HIGH/CRITICAL
+            // vulnerabilities before they deploy. Report-only for now
+            // (--exit-code 0); --ignore-unfixed limits the report to vulns that
+            // have an available fix. Flip TRIVY_EXIT_CODE to '1' to make it a
+            // build-failing gate once you've reviewed a run.
+            environment {
+                TRIVY_EXIT_CODE = '0'
+                TRIVY_SEVERITY  = 'HIGH,CRITICAL'
+            }
             steps {
                 sh '''
-                    ansible-playbook \
-                        -i ansible/hosts \
-                        ansible/deploy_staging_playbook.yaml
+                    mkdir -p trivy-reports .trivy-cache
+
+                    for target in fitness-backend-staging:latest fitness-frontend-staging:latest; do
+                        safe_name=$(echo "${target}" | tr '/:' '__')
+                        echo "=== Scanning ${target} ==="
+
+                        docker run --rm \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -v "${WORKSPACE}/.trivy-cache:/root/.cache/trivy" \
+                            -v "${WORKSPACE}/trivy-reports:/reports" \
+                            aquasec/trivy:latest image \
+                            --scanners vuln \
+                            --severity "${TRIVY_SEVERITY}" \
+                            --ignore-unfixed \
+                            --exit-code "${TRIVY_EXIT_CODE}" \
+                            --no-progress \
+                            --format table \
+                            --output "/reports/${safe_name}.txt" \
+                            "${target}"
+
+                        docker run --rm \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -v "${WORKSPACE}/.trivy-cache:/root/.cache/trivy" \
+                            aquasec/trivy:latest image \
+                            --scanners vuln \
+                            --severity "${TRIVY_SEVERITY}" \
+                            --ignore-unfixed \
+                            --exit-code "${TRIVY_EXIT_CODE}" \
+                            --no-progress \
+                            "${target}"
+                    done
                 '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'trivy-reports/*.txt', allowEmptyArchive: true
+                }
             }
         }
 
-        stage('Verify Deployment') {
+        stage('Deploy Staging') {
             steps {
                 sh '''
-                    set -e
-
-                    echo "Waiting for staging services..."
-                    sleep 10
-
-                    curl --fail http://host.docker.internal:4001/health
-                    curl --fail http://host.docker.internal:4000/pages/login.html
+                ansible-playbook \
+                -i ansible/hosts \
+                ansible/deploy_staging_playbook.yaml
                 '''
             }
         }
@@ -106,6 +137,9 @@ pipeline {
                     set -e
 
                     BACKEND_URL="http://host.docker.internal:4001"
+
+                    echo "Waiting for staging backend..."
+                    sleep 10
 
                     echo "================================"
                     echo "API TEST 1: Health endpoint"
@@ -118,8 +152,11 @@ pipeline {
                         > /tmp/health-response.json
 
                     cat /tmp/health-response.json
+
                     grep -q '"status":"OK"' /tmp/health-response.json
+
                     echo "PASS: Health API returned status OK."
+
 
                     echo "================================"
                     echo "API TEST 2: Session endpoint"
@@ -133,9 +170,12 @@ pipeline {
                         "$BACKEND_URL/api/auth/session")
 
                     cat /tmp/session-response.json
+
                     test "$SESSION_STATUS" = "200"
                     grep -q '"loggedIn":false' /tmp/session-response.json
+
                     echo "PASS: Session API returned HTTP 200."
+
 
                     echo "================================"
                     echo "API TEST 3: Invalid login"
@@ -152,9 +192,12 @@ pipeline {
                         "$BACKEND_URL/api/auth/login")
 
                     cat /tmp/login-response.json
+
                     test "$LOGIN_STATUS" = "400"
                     grep -q '"success":false' /tmp/login-response.json
+
                     echo "PASS: Invalid login returned HTTP 400."
+
 
                     echo "================================"
                     echo "API TEST 4: Protected API"
@@ -168,8 +211,10 @@ pipeline {
                         "$BACKEND_URL/api/calorie-tracker")
 
                     cat /tmp/protected-response.json
+
                     test "$PROTECTED_STATUS" = "401"
                     grep -q '"success":false' /tmp/protected-response.json
+
                     echo "PASS: Protected API returned HTTP 401."
 
                     echo "================================"
@@ -177,10 +222,13 @@ pipeline {
                     echo "================================"
                 '''
             }
+
         }
+
     }
 
     post {
+
         success {
             echo 'Staging deployment successful.'
         }
@@ -188,5 +236,7 @@ pipeline {
         failure {
             echo 'Staging deployment failed.'
         }
+
     }
+
 }

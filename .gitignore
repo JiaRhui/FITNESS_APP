@@ -1,1 +1,7 @@
 node_modules/
+node_modules/
+.env
+trivy-backend.txt
+trivy-after.txt
+trivy-reports/
+.trivy-cache/
