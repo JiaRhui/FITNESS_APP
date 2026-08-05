@@ -322,3 +322,16 @@ Republic Polytechnic
 C270 DevOps Essentials
 
 RP Fitness App Project
+
+Jenkins:
+username: admin
+password: f5c79080ac86481f9d587b5f6609d275
+
+SonarQube:
+admin
+C270_Devops@67
+squ_92788218c05f7138f547464308a2851483270aee
+
+pro+gar:
+admin
+admin123
